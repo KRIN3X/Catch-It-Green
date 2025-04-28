@@ -563,6 +563,9 @@ body {
         margin-top: 0; /* Removed margin to prevent upward shift */
         border-radius: 0; /* Remove border radius in fullscreen mode */
         border: none; /* Remove border in fullscreen mode */
+        display: block; /* Ensure canvas is displayed as block element */
+        max-width: 100%; /* Ensure canvas doesn't overflow container */
+        max-height: 80vh; /* Limit height to prevent overflow */
     }
     
     .mobile-controls {

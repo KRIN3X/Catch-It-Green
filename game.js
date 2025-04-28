@@ -197,23 +197,28 @@ window.onload = function() {
     let touchX = 0;
     let targetCartX = 0;
     
-// Add touch event listeners with a simpler, more direct approach
+// Add touch event listeners for mobile controls
 canvas.addEventListener('touchstart', function(e) {
     e.preventDefault();
     touchActive = true;
-    // Directly set cart position to touch position (centered)
-    cartX = e.touches[0].clientX - (CART_WIDTH / 2);
-    // Keep cart within boundaries
-    cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
+    touchX = e.touches[0].clientX;
 });
 
 canvas.addEventListener('touchmove', function(e) {
     e.preventDefault();
     if (touchActive) {
-        // Directly set cart position to touch position (centered)
-        cartX = e.touches[0].clientX - (CART_WIDTH / 2);
+        // Calculate how much the touch has moved
+        const newTouchX = e.touches[0].clientX;
+        const deltaX = newTouchX - touchX;
+        
+        // Move the cart by that amount
+        cartX += deltaX;
+        
         // Keep cart within boundaries
         cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
+        
+        // Update touch position for next move
+        touchX = newTouchX;
     }
 });
 
@@ -779,12 +784,8 @@ function updateCartPosition() {
         cartX += CART_SPEED;
     }
     
-    // For touch controls (mobile)
-    if (touchActive && typeof targetCartX !== 'undefined') {
-        // Smooth movement towards target position
-        const distanceToTarget = targetCartX - cartX;
-        cartX += distanceToTarget * 0.3; // Adjust this value for smoother/faster movement
-    }
+    // Touch controls are now handled directly in the touchmove event
+    // No need to handle them here as we're directly setting cartX in the event
     
     // Keep cart within canvas boundaries
     cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
@@ -1643,27 +1644,31 @@ function endGame() {
     // Stop background music
     backgroundMusic.pause();
     
-    // Create and preload score sound effect
+    // Create score sound effect
     const scoreSound = new Audio('assets/audio/score.wav');
-    scoreSound.preload = 'auto';
     
-    // Force user interaction to play sound on mobile
-    const playSound = function() {
-        // Play the sound with a slight delay to ensure it works on mobile
+    // For mobile devices, we need to handle audio differently
+    if (isMobileDevice()) {
+        // Add a click/touch event to the game over screen to play sound
+        // This ensures sound plays in response to user interaction
+        const playScoreSound = function() {
+            scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+            gameOverElement.removeEventListener('click', playScoreSound);
+            gameOverElement.removeEventListener('touchstart', playScoreSound);
+        };
+        
+        // Add event listeners for both click and touch
+        gameOverElement.addEventListener('click', playScoreSound, { once: true });
+        gameOverElement.addEventListener('touchstart', playScoreSound, { once: true });
+        
+        // Also try to play it directly (might work on some devices)
         setTimeout(() => {
-            scoreSound.play().catch(e => {
-                console.log("Score sound play failed, retrying:", e);
-                // Try again with user interaction
-                document.addEventListener('touchstart', function playOnTouch() {
-                    scoreSound.play().catch(e => console.log("Second attempt failed:", e));
-                    document.removeEventListener('touchstart', playOnTouch);
-                }, { once: true });
-            });
+            scoreSound.play().catch(e => console.log("Initial score sound play failed:", e));
         }, 100);
-    };
-    
-    // Play sound
-    playSound();
+    } else {
+        // On desktop, just play the sound directly
+        scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+    }
     
     // Update final score
     finalScoreElement.textContent = score;
