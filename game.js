@@ -1,6 +1,6 @@
 // Game constants
 const GAME_DURATION = 30; // Game duration in seconds
-const CART_SPEED = 14; // Doubled from 7 to match larger cart size
+const CART_SPEED = 20; // Increased from 14 to make cart movement more rapid
 const ITEM_SPEED = 6; // Doubled from 3 to match larger item size
 const SPAWN_RATE = 500; // Reduced from 1000 to make items appear more frequently
 const CART_WIDTH = 160; // Doubled from 80
@@ -197,22 +197,24 @@ window.onload = function() {
     let touchX = 0;
     let targetCartX = 0;
     
-// Add touch event listeners for mobile controls
-canvas.addEventListener('touchstart', function(e) {
+// Add touch event listeners for the swipe area instead of the canvas
+const swipeArea = document.getElementById('swipeArea');
+
+swipeArea.addEventListener('touchstart', function(e) {
     e.preventDefault();
     touchActive = true;
     touchX = e.touches[0].clientX;
 });
 
-canvas.addEventListener('touchmove', function(e) {
+swipeArea.addEventListener('touchmove', function(e) {
     e.preventDefault();
     if (touchActive) {
         // Calculate how much the touch has moved
         const newTouchX = e.touches[0].clientX;
         const deltaX = newTouchX - touchX;
         
-        // Move the cart by that amount
-        cartX += deltaX;
+        // Move the cart by that amount (with increased sensitivity for more responsive movement)
+        cartX += deltaX * 1.5;
         
         // Keep cart within boundaries
         cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
@@ -222,12 +224,12 @@ canvas.addEventListener('touchmove', function(e) {
     }
 });
 
-canvas.addEventListener('touchend', function(e) {
+swipeArea.addEventListener('touchend', function(e) {
     e.preventDefault();
     touchActive = false;
 });
 
-canvas.addEventListener('touchcancel', function(e) {
+swipeArea.addEventListener('touchcancel', function(e) {
     e.preventDefault();
     touchActive = false;
 });
