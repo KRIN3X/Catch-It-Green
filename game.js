@@ -201,11 +201,13 @@ window.onload = function() {
     
     // Add touch event listeners for swipe controls
     canvas.addEventListener('touchstart', function(e) {
-        // Handle touches anywhere on the canvas for better responsiveness
-        e.preventDefault();
-        touchStartX = e.touches[0].clientX;
-        lastTouchTime = Date.now();
-        isSwiping = true;
+        // Only handle touches in the lower part of the screen (bottom 30%)
+        if (e.touches[0].clientY > canvas.height * 0.7) {
+            e.preventDefault();
+            touchStartX = e.touches[0].clientX;
+            lastTouchTime = Date.now();
+            isSwiping = true;
+        }
     });
     
     canvas.addEventListener('touchmove', function(e) {
@@ -1651,29 +1653,9 @@ function endGame() {
     // Stop background music
     backgroundMusic.pause();
     
-    // Play score sound effect - use a user interaction to trigger sound
+    // Play score sound effect
     const scoreSound = new Audio('assets/audio/score.wav');
-    
-    // Preload the sound
-    scoreSound.load();
-    
-    // Play the sound with a slight delay to ensure it's ready
-    setTimeout(() => {
-        // Try to play the sound with a user interaction
-        const playPromise = scoreSound.play();
-        
-        // Handle potential play() promise rejection
-        if (playPromise !== undefined) {
-            playPromise.catch(e => {
-                console.log("Score sound play failed:", e);
-                // Add a click event listener to play sound on first user interaction
-                document.addEventListener('click', function playOnClick() {
-                    scoreSound.play();
-                    document.removeEventListener('click', playOnClick);
-                }, { once: true });
-            });
-        }
-    }, 100);
+    scoreSound.play().catch(e => console.log("Score sound play failed:", e));
     
     // Update final score
     finalScoreElement.textContent = score;
