@@ -12,7 +12,7 @@ Get ready to move your cart, sharpen your reflexes, and help the environment!
 **Catch It Green!**
 
 - **Take a look at the shopping list first!**  
-- Swipe your finger left and right to move the cart.
+- Use the **Left** and **Right** arrow keys to move the cart
 - **Catch as many low carbon footprint items** as you can to gain positive points!
 - **Avoid high carbon footprint items** that will lower your score!
 
