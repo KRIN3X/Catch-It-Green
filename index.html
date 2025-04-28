@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#111111">
+    <title>Catch It Green!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Audio element for background music -->
+    <audio id="backgroundMusic" loop>
+        <source src="./assets/audio/music.mp3" type="audio/mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <div class="game-container">
+        <div class="game-header">
+            <div class="score-container">Score: <span id="score">0</span></div>
+            <div class="challenge-container">
+                <div class="challenge-title">Special Challenge:</div>
+                <div id="challengeItems" class="challenge-items"></div>
+            </div>
+            <div class="timer-container">Time: <span id="timer">30</span>s</div>
+        </div>
+        
+        <!-- Carbon credit coin animation container -->
+        <div id="coinAnimation" class="coin-animation">
+            <img src="assets/images/coin.png" alt="Carbon Credit Coin">
+            <div class="coin-text">Carbon Credit Earned!</div>
+        </div>
+        
+        <canvas id="gameCanvas" width="800" height="600"></canvas>
+        
+        <!-- Mobile controls - now using swipe gestures -->
+        <div id="mobileControls" class="mobile-controls">
+            <div class="swipe-instruction">Swipe to move cart</div>
+        </div>
+        
+        <div id="startScreen" class="game-screen" style="width: 80%; max-width: 700px; padding: 40px; text-align: center;">
+            <h2>Catch It Green!</h2>
+            <p>Burst into the supermarket — it's time to shop sustainably and fast! 🌱🛒</p>
+            
+            <p>🛍️ Check your shopping list below: these are your eco-targets!</p>
+            
+            <p>➡️ Move the cart with Arrow Keys or swipe on mobile.</p>
+            <p>🌿 Catch low-carbon items for points.</p>
+            <p>⚠️ Avoid high-carbon items to protect your score.</p>
+            
+            <p><strong>Special Challenge:</strong></p>
+            <p>Collect all five listed items to earn a tokenized carbon credit for the supermarket! 🌍</p>
+            
+            <p>Time is ticking — ready, set, green! 🚀</p>
+            <div class="button-container">
+                <button id="factsButton">Shopping list</button>
+                <button id="startButton">Start shopping</button>
+            </div>
+            
+            <div class="credits-container" style="text-align: center; font-size: 0.9em;">
+                <p class="credits-text" style="font-size: 0.9em; text-align: center;">Baked with love by Lorenzo Natali 🍪</p>
+                <p class="credits-text" style="font-size: 0.9em; text-align: center;">Intended for bored recruiters, random gamers, sustainability enthusiasts, and pixel art lovers.</p>
+                
+                <ul class="credits-list" style="text-align: center; list-style-type: none; padding-left: 0; font-size: 0.9em;">
+                    <li style="text-align: center;">Developed using Visual Studio Code with HTML5, CSS3, and JavaScript.</li>
+                    <li style="text-align: center;">Pixel art graphics generated with ChatGPT.</li>
+                    <li style="text-align: center;">Main soundtrack composed with Suno.com.</li>
+                    <li style="text-align: center;">Sound effects sourced from Mixkit.com.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div id="factsScreen" class="facts-screen">
+            <h2>Shopping List</h2>
+            <div class="facts-container">
+                <!-- Content is now dynamically generated in the displayShoppingList function -->
+            </div>
+            <button id="backButton">Back to Menu</button>
+        </div>
+        
+        <div id="gameOver" class="game-over">
+            <h2>Game Over!</h2>
+            <p>Your final score: <span id="finalScore">0</span></p>
+            <div class="result-container">
+                <p id="feedback">Thanks for playing!</p>
+                <img id="medalImage" src="" alt="Achievement Medal" class="medal-image">
+            </div>
+            <div class="shopping-cart-container">
+                <h3>Your Shopping Cart</h3>
+                <div id="collectedItemsList" class="collected-items-list">
+                    <!-- Items will be added here dynamically -->
+                </div>
+            </div>
+            <div class="game-over-buttons">
+                <button id="restartButton">Play Again</button>
+                <button id="scoreChartButton">Score Chart</button>
+            </div>
+            
+            <!-- Score chart modal -->
+            <div id="scoreChartModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-button">&times;</span>
+                    <h3>Your High Scores</h3>
+                    <div id="scoreChartList" class="score-chart-list">
+                        <!-- Scores will be added here dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
