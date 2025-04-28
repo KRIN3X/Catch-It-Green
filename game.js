@@ -1381,6 +1381,11 @@ function displayShoppingList(container) {
 
 // Helper function to add an item to the shopping list
 function addItemToShoppingList(container, item) {
+    // Create a row container
+    const rowContainer = document.createElement('div');
+    rowContainer.className = 'shopping-list-row';
+    
+    // Create the item element
     const itemElement = document.createElement('div');
     itemElement.className = 'collected-item';
     
@@ -1421,8 +1426,11 @@ function addItemToShoppingList(container, item) {
     itemElement.appendChild(nameElement);
     itemElement.appendChild(pointsElement);
     
-    // Add item to container
-    container.appendChild(itemElement);
+    // Add item to row container
+    rowContainer.appendChild(itemElement);
+    
+    // Add row container to the main container
+    container.appendChild(rowContainer);
 }
 
 // Display collected items in the shopping cart list

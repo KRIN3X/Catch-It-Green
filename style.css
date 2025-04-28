@@ -282,6 +282,14 @@ body {
     border-radius: 5px;
 }
 
+/* Shopping list row styling */
+.shopping-list-row {
+    margin-bottom: 5px;
+    background-color: #000;
+    border-radius: 4px;
+    padding: 2px;
+}
+
 .fact-item {
     margin: 20px 0;
     padding: 15px;
