@@ -528,6 +528,9 @@ function startGame() {
     doublePointsEndTime = 0; // Reset double points end time
     gameRunning = true;
     
+    // Initialize audio for mobile devices
+    initAudio();
+    
     // Reset cart image to empty cart at the start of each game
     cartImage.src = 'assets/images/cart.png';
     
@@ -1153,48 +1156,115 @@ function spawnBehaviorItem(behaviorType, isPositive) {
     return true;
 }
 
+// Audio context for better mobile sound support
+let audioContext;
+let audioInitialized = false;
+let soundBuffers = {};
+
+// Initialize audio context
+function initAudio() {
+    if (audioInitialized) return;
+    
+    try {
+        // Create audio context
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioContext = new AudioContext();
+        
+        // Load common sounds
+        loadSound('sound.wav');
+        loadSound('bonus.wav');
+        loadSound('malus.wav');
+        loadSound('greenwashing.wav');
+        loadSound('greta.wav');
+        loadSound('trump.wav');
+        loadSound('grandma.wav');
+        loadSound('bear.mp3');
+        loadSound('coin.wav');
+        
+        // Load behavior sounds
+        positiveBehaviors.concat(negativeBehaviors).forEach(behavior => {
+            loadSound(behavior.sound);
+        });
+        
+        audioInitialized = true;
+        console.log("Audio initialized successfully");
+    } catch (e) {
+        console.error("Audio initialization failed:", e);
+    }
+}
+
+// Load a sound file into buffer
+function loadSound(filename) {
+    fetch(`assets/audio/${filename}`)
+        .then(response => response.arrayBuffer())
+        .then(arrayBuffer => audioContext.decodeAudioData(arrayBuffer))
+        .then(audioBuffer => {
+            soundBuffers[filename] = audioBuffer;
+        })
+        .catch(e => console.error(`Error loading sound ${filename}:`, e));
+}
+
+// Play a sound from buffer
+function playSound(filename) {
+    // Initialize audio if not already done
+    if (!audioInitialized) {
+        initAudio();
+        // If we just initialized, we need to resume the context on mobile
+        if (audioContext && audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    }
+    
+    // If audio context is suspended (common on mobile), try to resume it
+    if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    
+    // If we have the buffer, play it
+    if (audioContext && soundBuffers[filename]) {
+        const source = audioContext.createBufferSource();
+        source.buffer = soundBuffers[filename];
+        source.connect(audioContext.destination);
+        source.start(0);
+        return true;
+    } else {
+        // Fallback to traditional Audio API
+        const sound = new Audio(`assets/audio/${filename}`);
+        sound.play().catch(e => console.log(`Sound play failed (${filename}):`, e));
+        return false;
+    }
+}
+
 // Play sound when collecting an item
 function playCollectSound(isGreen, item) {
-    // Create a new Audio object
-    const sound = new Audio();
+    // Determine which sound to play
+    let soundFile = 'sound.wav'; // Default sound
     
     // Check if this is a special item (bonus or malus)
     if (item && item.isSpecial) {
         if (item.type.name === bonusItem.name) {
-            // Play bonus sound
-            sound.src = 'assets/audio/bonus.wav';
+            soundFile = 'bonus.wav';
         } else if (item.type.name === malusItem.name) {
-            // Play malus sound
-            sound.src = 'assets/audio/malus.wav';
+            soundFile = 'malus.wav';
         } else if (item.type.name === greenwashingItem.name) {
-            // Play greenwashing sound
-            sound.src = 'assets/audio/greenwashing.wav';
+            soundFile = 'greenwashing.wav';
         } else if (item.type.name === gretaItem.name) {
-            // Play Greta sound
-            sound.src = 'assets/audio/greta.wav';
+            soundFile = 'greta.wav';
         } else if (item.type.name === trumpItem.name) {
-            // Play Trump sound
-            sound.src = 'assets/audio/trump.wav';
+            soundFile = 'trump.wav';
         } else if (item.type.name === grandmaItem.name) {
-            // Play Grandma sound
-            sound.src = 'assets/audio/grandma.wav';
+            soundFile = 'grandma.wav';
         } else if (item.type.name === bearItem.name) {
-            // Play Bear sound
-            sound.src = 'assets/audio/bear.mp3';
+            soundFile = 'bear.mp3';
         }
     } 
     // Check if this is a behavior item
-    else if (item && item.isBehavior) {
-        // Play the specific behavior sound
-        sound.src = `assets/audio/${item.type.sound}`;
-    } 
-    else {
-        // Play regular sound
-        sound.src = 'assets/audio/sound.wav';
+    else if (item && item.isBehavior && item.type.sound) {
+        soundFile = item.type.sound;
     }
     
     // Play the sound
-    sound.play().catch(e => console.log("Sound play failed:", e));
+    playSound(soundFile);
 }
 
 // Update score display
