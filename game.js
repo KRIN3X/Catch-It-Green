@@ -192,59 +192,42 @@ window.onload = function() {
     scoreChartButton.addEventListener('click', showScoreChart);
     closeButton.addEventListener('click', hideScoreChart);
     
-    // Variables for swipe controls
-    let touchStartX = 0;
-    let touchEndX = 0;
-    let swipeVelocity = 0;
-    let lastTouchTime = 0;
-    let isSwiping = false;
+    // Variables for touch controls
+    let touchActive = false;
+    let touchX = 0;
+    let targetCartX = 0;
     
-// Add touch event listeners for swipe controls
+// Add touch event listeners for direct position control
 canvas.addEventListener('touchstart', function(e) {
-    // Handle touches anywhere on the canvas
     e.preventDefault();
-    touchStartX = e.touches[0].clientX;
-    lastTouchTime = Date.now();
-    isSwiping = true;
+    touchActive = true;
+    touchX = e.touches[0].clientX;
+    // Calculate target position, accounting for cart width to center it under the touch
+    targetCartX = touchX - (CART_WIDTH / 2);
 });
 
 canvas.addEventListener('touchmove', function(e) {
-    if (isSwiping) {
+    if (touchActive) {
         e.preventDefault();
-        touchEndX = e.touches[0].clientX;
-        
-        // Calculate swipe velocity (pixels per millisecond)
-        const currentTime = Date.now();
-        const timeDiff = currentTime - lastTouchTime;
-        if (timeDiff > 0) {
-            swipeVelocity = (touchEndX - touchStartX) / timeDiff * 10; // Scale for better control
-        }
-        
-        // Update for next move event
-        touchStartX = touchEndX;
-        lastTouchTime = currentTime;
+        touchX = e.touches[0].clientX;
+        // Update target position as touch moves
+        targetCartX = touchX - (CART_WIDTH / 2);
     }
 });
 
 canvas.addEventListener('touchend', function(e) {
-    if (isSwiping) {
-        e.preventDefault();
-        // Gradually reduce velocity when touch ends
-        const velocityDecay = setInterval(function() {
-            swipeVelocity *= 0.9; // Reduce velocity by 10% each frame
-            if (Math.abs(swipeVelocity) < 0.1) {
-                swipeVelocity = 0;
-                clearInterval(velocityDecay);
-            }
-        }, 16); // ~60fps
-        
-        isSwiping = false;
-    }
+    e.preventDefault();
+    touchActive = false;
+});
+
+canvas.addEventListener('touchcancel', function(e) {
+    e.preventDefault();
+    touchActive = false;
 });
     
     // Add touch event listener for the entire document to handle touches outside canvas
     document.addEventListener('touchend', function() {
-        isSwiping = false;
+        touchActive = false;
     });
     
     // Load item images
@@ -783,7 +766,7 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Update cart position based on key presses or swipe velocity
+// Update cart position based on key presses or touch position
 function updateCartPosition() {
     // For keyboard controls
     if (keysPressed['ArrowLeft'] || keysPressed['a']) {
@@ -794,9 +777,11 @@ function updateCartPosition() {
         cartX += CART_SPEED;
     }
     
-    // For swipe controls (mobile)
-    if (typeof swipeVelocity !== 'undefined' && swipeVelocity !== 0) {
-        cartX += swipeVelocity;
+    // For touch controls (mobile)
+    if (touchActive && typeof targetCartX !== 'undefined') {
+        // Smooth movement towards target position
+        const distanceToTarget = targetCartX - cartX;
+        cartX += distanceToTarget * 0.3; // Adjust this value for smoother/faster movement
     }
     
     // Keep cart within canvas boundaries
