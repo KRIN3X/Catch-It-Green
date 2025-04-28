@@ -197,21 +197,23 @@ window.onload = function() {
     let touchX = 0;
     let targetCartX = 0;
     
-// Add touch event listeners for direct position control
+// Add touch event listeners with a simpler, more direct approach
 canvas.addEventListener('touchstart', function(e) {
     e.preventDefault();
     touchActive = true;
-    touchX = e.touches[0].clientX;
-    // Calculate target position, accounting for cart width to center it under the touch
-    targetCartX = touchX - (CART_WIDTH / 2);
+    // Directly set cart position to touch position (centered)
+    cartX = e.touches[0].clientX - (CART_WIDTH / 2);
+    // Keep cart within boundaries
+    cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
 });
 
 canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
     if (touchActive) {
-        e.preventDefault();
-        touchX = e.touches[0].clientX;
-        // Update target position as touch moves
-        targetCartX = touchX - (CART_WIDTH / 2);
+        // Directly set cart position to touch position (centered)
+        cartX = e.touches[0].clientX - (CART_WIDTH / 2);
+        // Keep cart within boundaries
+        cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
     }
 });
 
@@ -1641,9 +1643,27 @@ function endGame() {
     // Stop background music
     backgroundMusic.pause();
     
-    // Play score sound effect
+    // Create and preload score sound effect
     const scoreSound = new Audio('assets/audio/score.wav');
-    scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+    scoreSound.preload = 'auto';
+    
+    // Force user interaction to play sound on mobile
+    const playSound = function() {
+        // Play the sound with a slight delay to ensure it works on mobile
+        setTimeout(() => {
+            scoreSound.play().catch(e => {
+                console.log("Score sound play failed, retrying:", e);
+                // Try again with user interaction
+                document.addEventListener('touchstart', function playOnTouch() {
+                    scoreSound.play().catch(e => console.log("Second attempt failed:", e));
+                    document.removeEventListener('touchstart', playOnTouch);
+                }, { once: true });
+            });
+        }, 100);
+    };
+    
+    // Play sound
+    playSound();
     
     // Update final score
     finalScoreElement.textContent = score;
