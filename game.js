@@ -199,50 +199,48 @@ window.onload = function() {
     let lastTouchTime = 0;
     let isSwiping = false;
     
-    // Add touch event listeners for swipe controls
-    canvas.addEventListener('touchstart', function(e) {
-        // Only handle touches in the lower part of the screen (bottom 30%)
-        if (e.touches[0].clientY > canvas.height * 0.7) {
-            e.preventDefault();
-            touchStartX = e.touches[0].clientX;
-            lastTouchTime = Date.now();
-            isSwiping = true;
+// Add touch event listeners for swipe controls
+canvas.addEventListener('touchstart', function(e) {
+    // Handle touches anywhere on the canvas
+    e.preventDefault();
+    touchStartX = e.touches[0].clientX;
+    lastTouchTime = Date.now();
+    isSwiping = true;
+});
+
+canvas.addEventListener('touchmove', function(e) {
+    if (isSwiping) {
+        e.preventDefault();
+        touchEndX = e.touches[0].clientX;
+        
+        // Calculate swipe velocity (pixels per millisecond)
+        const currentTime = Date.now();
+        const timeDiff = currentTime - lastTouchTime;
+        if (timeDiff > 0) {
+            swipeVelocity = (touchEndX - touchStartX) / timeDiff * 10; // Scale for better control
         }
-    });
-    
-    canvas.addEventListener('touchmove', function(e) {
-        if (isSwiping) {
-            e.preventDefault();
-            touchEndX = e.touches[0].clientX;
-            
-            // Calculate swipe velocity (pixels per millisecond)
-            const currentTime = Date.now();
-            const timeDiff = currentTime - lastTouchTime;
-            if (timeDiff > 0) {
-                swipeVelocity = (touchEndX - touchStartX) / timeDiff * 10; // Scale for better control
+        
+        // Update for next move event
+        touchStartX = touchEndX;
+        lastTouchTime = currentTime;
+    }
+});
+
+canvas.addEventListener('touchend', function(e) {
+    if (isSwiping) {
+        e.preventDefault();
+        // Gradually reduce velocity when touch ends
+        const velocityDecay = setInterval(function() {
+            swipeVelocity *= 0.9; // Reduce velocity by 10% each frame
+            if (Math.abs(swipeVelocity) < 0.1) {
+                swipeVelocity = 0;
+                clearInterval(velocityDecay);
             }
-            
-            // Update for next move event
-            touchStartX = touchEndX;
-            lastTouchTime = currentTime;
-        }
-    });
-    
-    canvas.addEventListener('touchend', function(e) {
-        if (isSwiping) {
-            e.preventDefault();
-            // Gradually reduce velocity when touch ends
-            const velocityDecay = setInterval(function() {
-                swipeVelocity *= 0.9; // Reduce velocity by 10% each frame
-                if (Math.abs(swipeVelocity) < 0.1) {
-                    swipeVelocity = 0;
-                    clearInterval(velocityDecay);
-                }
-            }, 16); // ~60fps
-            
-            isSwiping = false;
-        }
-    });
+        }, 16); // ~60fps
+        
+        isSwiping = false;
+    }
+});
     
     // Add touch event listener for the entire document to handle touches outside canvas
     document.addEventListener('touchend', function() {
@@ -294,9 +292,14 @@ window.onload = function() {
     backgroundImage = new Image();
     backgroundImage.src = 'assets/images/background.png';
     
-    // Set cart initial position
-    cartX = canvas.width / 2 - CART_WIDTH / 2;
-    cartY = canvas.height - CART_HEIGHT - 20;
+// Set cart initial position
+cartX = canvas.width / 2 - CART_WIDTH / 2;
+// Adjust cart position to be closer to the bottom on mobile
+if (isMobileDevice()) {
+    cartY = canvas.height - CART_HEIGHT - 10; // Reduced from 20 to 10 for mobile
+} else {
+    cartY = canvas.height - CART_HEIGHT - 20; // Original position for desktop
+}
     
     // Event listeners for keyboard
     window.addEventListener('keydown', function(e) {

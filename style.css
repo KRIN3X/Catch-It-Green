@@ -560,7 +560,7 @@ body {
     #gameCanvas {
         width: 100%;
         height: auto;
-        margin-top: 10px; /* Reduced from 20px to bring canvas closer to top */
+        margin-top: 0; /* Removed margin to prevent upward shift */
         border-radius: 0; /* Remove border radius in fullscreen mode */
         border: none; /* Remove border in fullscreen mode */
     }
@@ -568,7 +568,7 @@ body {
     .mobile-controls {
         display: flex;
         position: fixed; /* Fix controls at the bottom of the screen */
-        bottom: 10px; /* Reduced from 20px to bring controls closer to bottom */
+        bottom: 5px; /* Further reduced to bring controls closer to bottom */
         left: 0;
         right: 0;
         padding: 0 20px;
