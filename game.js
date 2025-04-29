@@ -7,6 +7,156 @@ const CART_WIDTH = 160; // Doubled from 80
 const CART_HEIGHT = 100; // Doubled from 50
 const ITEM_SIZE = 100; // Doubled from 50
 
+// Sound manager for improved audio handling, especially on mobile
+let soundManager = {
+    initialized: false,
+    context: null,
+    buffers: {},
+    sounds: {},
+    userInteracted: false,
+    
+    // Initialize with critical sounds
+    init: function() {
+        if (this.initialized) return;
+        
+        try {
+            // Create audio context
+            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            this.context = new AudioContext();
+            
+            // Preload critical sounds
+            this.preloadSound('countdown.wav');
+            this.preloadSound('coin.wav');
+            this.preloadSound('score.wav');
+            
+            // Mark as initialized
+            this.initialized = true;
+            console.log("Sound manager initialized successfully");
+        } catch (e) {
+            console.error("Sound manager initialization failed:", e);
+        }
+    },
+    
+    // Handle user interaction to unlock audio
+    handleInteraction: function() {
+        this.userInteracted = true;
+        if (this.context && this.context.state === 'suspended') {
+            this.context.resume().then(() => {
+                console.log("AudioContext resumed successfully");
+            }).catch(e => {
+                console.error("Failed to resume AudioContext:", e);
+            });
+        }
+    },
+    
+    // Preload a sound
+    preloadSound: function(filename) {
+        // Create both Web Audio and traditional Audio versions
+        this.loadBuffer(filename);
+        this.loadAudio(filename);
+    },
+    
+    // Load sound into AudioContext buffer
+    loadBuffer: function(filename) {
+        fetch(`assets/audio/${filename}`)
+            .then(response => response.arrayBuffer())
+            .then(arrayBuffer => this.context.decodeAudioData(arrayBuffer))
+            .then(audioBuffer => {
+                this.buffers[filename] = audioBuffer;
+                console.log(`Sound buffer loaded: ${filename}`);
+            })
+            .catch(e => console.error(`Error loading sound buffer ${filename}:`, e));
+    },
+    
+    // Load sound as traditional Audio object
+    loadAudio: function(filename) {
+        const audio = new Audio(`assets/audio/${filename}`);
+        audio.load(); // Preload the audio
+        this.sounds[filename] = audio;
+        console.log(`Sound loaded: ${filename}`);
+    },
+    
+    // Play a sound with multiple fallback mechanisms
+    playSound: function(filename, options = {}) {
+        const { volume = 1.0, forcePlay = false } = options;
+        
+        // Try to resume AudioContext if suspended
+        if (this.context && this.context.state === 'suspended') {
+            this.context.resume().catch(e => console.log("Failed to resume AudioContext:", e));
+        }
+        
+        // Try Web Audio API first (if initialized and buffer is loaded)
+        if (this.initialized && this.context && this.buffers[filename]) {
+            try {
+                const source = this.context.createBufferSource();
+                source.buffer = this.buffers[filename];
+                
+                // Create gain node for volume control
+                const gainNode = this.context.createGain();
+                gainNode.gain.value = volume;
+                
+                // Connect nodes
+                source.connect(gainNode);
+                gainNode.connect(this.context.destination);
+                
+                // Start playback
+                source.start(0);
+                console.log(`Playing sound (Web Audio): ${filename}`);
+                return true;
+            } catch (e) {
+                console.error(`Web Audio playback failed for ${filename}:`, e);
+                // Fall through to next method
+            }
+        }
+        
+        // Try traditional Audio API with the preloaded Audio object
+        if (this.sounds[filename]) {
+            try {
+                // Clone the audio to allow overlapping playback
+                const soundClone = this.sounds[filename].cloneNode();
+                soundClone.volume = volume;
+                
+                // Play with promise and fallback
+                const playPromise = soundClone.play();
+                
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log(`Traditional Audio playback failed for ${filename}:`, e);
+                        
+                        // If user hasn't interacted and this is a critical sound, try again with timeout
+                        if (forcePlay) {
+                            setTimeout(() => {
+                                soundClone.play().catch(e => console.log(`Retry failed for ${filename}:`, e));
+                            }, 300);
+                        }
+                    });
+                }
+                
+                console.log(`Playing sound (Traditional Audio): ${filename}`);
+                return true;
+            } catch (e) {
+                console.error(`Traditional Audio playback failed for ${filename}:`, e);
+            }
+        }
+        
+        // Last resort: create a new Audio object and try to play it
+        if (forcePlay) {
+            try {
+                const newSound = new Audio(`assets/audio/${filename}`);
+                newSound.volume = volume;
+                setTimeout(() => {
+                    newSound.play().catch(e => console.log(`New Audio playback failed for ${filename}:`, e));
+                }, 0);
+                return true;
+            } catch (e) {
+                console.error(`New Audio playback failed for ${filename}:`, e);
+            }
+        }
+        
+        return false;
+    }
+};
+
 // Game variables
 let canvas, ctx;
 let score = 0;
@@ -167,6 +317,18 @@ window.onload = function() {
         preventMobileScrolling();
     }
     
+    // Initialize sound manager
+    soundManager.init();
+    
+    // Add user interaction handlers to unlock audio
+    document.addEventListener('click', function() {
+        soundManager.handleInteraction();
+    }, { once: false });
+    
+    document.addEventListener('touchstart', function() {
+        soundManager.handleInteraction();
+    }, { once: false });
+    
     // Hide mobile controls initially (will be shown when game starts)
     document.getElementById('mobileControls').style.display = 'none';
     
@@ -213,8 +375,8 @@ swipeArea.addEventListener('touchmove', function(e) {
         const newTouchX = e.touches[0].clientX;
         const deltaX = newTouchX - touchX;
         
-        // Move the cart by that amount (with increased sensitivity for more responsive movement)
-        cartX += deltaX * 1.5;
+        // Move the cart by that amount (with significantly increased sensitivity for more responsive movement)
+        cartX += deltaX * 2.5; // Increased from 1.5 to 2.5 for faster response
         
         // Keep cart within boundaries
         cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
@@ -428,9 +590,8 @@ function awardCarbonCredit() {
     const coinAnimation = document.getElementById('coinAnimation');
     coinAnimation.classList.add('show');
     
-    // Play coin sound
-    const coinSound = new Audio('assets/audio/coin.wav');
-    coinSound.play().catch(e => console.log("Coin sound play failed:", e));
+    // Play coin sound using sound manager with force play option
+    soundManager.playSound('coin.wav', { volume: 1.0, forcePlay: true });
     
     // Hide coin animation after 3 seconds
     setTimeout(() => {
@@ -528,8 +689,9 @@ function startGame() {
     doublePointsEndTime = 0; // Reset double points end time
     gameRunning = true;
     
-    // Initialize audio for mobile devices
-    initAudio();
+    // Ensure sound manager is initialized and handle user interaction
+    soundManager.init();
+    soundManager.handleInteraction();
     
     // Reset cart image to empty cart at the start of each game
     cartImage.src = 'assets/images/cart.png';
@@ -1284,8 +1446,8 @@ function updateTimer() {
     
     // Play countdown sound 4 seconds before the end
     if (timeLeft === 4 && !countdownSoundPlayed) {
-        const countdownSound = new Audio('assets/audio/countdown.wav');
-        countdownSound.play().catch(e => console.log("Countdown sound play failed:", e));
+        // Use sound manager to play countdown sound with force play option
+        soundManager.playSound('countdown.wav', { volume: 1.0, forcePlay: true });
         countdownSoundPlayed = true;
     }
 }
@@ -1724,15 +1886,19 @@ function endGame() {
     // Stop background music
     backgroundMusic.pause();
     
-    // Create score sound effect
-    const scoreSound = new Audio('assets/audio/score.wav');
+    // Hide mobile controls when game ends
+    const mobileControls = document.getElementById('mobileControls');
+    if (mobileControls) {
+        mobileControls.style.display = 'none';
+    }
     
+    // Play game over sound using sound manager
     // For mobile devices, we need to handle audio differently
     if (isMobileDevice()) {
         // Add a click/touch event to the game over screen to play sound
         // This ensures sound plays in response to user interaction
         const playScoreSound = function() {
-            scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+            soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
             gameOverElement.removeEventListener('click', playScoreSound);
             gameOverElement.removeEventListener('touchstart', playScoreSound);
         };
@@ -1741,13 +1907,13 @@ function endGame() {
         gameOverElement.addEventListener('click', playScoreSound, { once: true });
         gameOverElement.addEventListener('touchstart', playScoreSound, { once: true });
         
-        // Also try to play it directly (might work on some devices)
+        // Also try to play it directly with a longer delay (300ms instead of 100ms)
         setTimeout(() => {
-            scoreSound.play().catch(e => console.log("Initial score sound play failed:", e));
-        }, 100);
+            soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
+        }, 300);
     } else {
         // On desktop, just play the sound directly
-        scoreSound.play().catch(e => console.log("Score sound play failed:", e));
+        soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
     }
     
     // Update final score
