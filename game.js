@@ -189,9 +189,12 @@ let itemsSlowed = false; // Track if items are slowed down
 let itemsSlowedEndTime = 0; // When the slow effect ends
 let itemsFast = false; // Track if items are faster
 let itemsFastEndTime = 0; // When the fast effect ends
+let timePlusDelayActive = false; // Track if Time Plus delay is active
+let timePlusDelayUntil = 0; // When Time Plus can start spawning
 
 // Special items
 const bonusItem = { name: 'Garden Gnome', points: 25, image: 'bonus.png', fastSpeed: true, smokeColor: 'rgba(100, 200, 255, 0.8)' }; // Light blue haze
+const timePlusItem = { name: 'Time Plus', points: '+ 5 seconds', image: '5sec.png', sound: '5sec.wav', fastSpeed: true, addTime: 5, isGreen: true }; // Adds 5 seconds to timer
 const malusItem = { name: 'Pollutant Barrell', points: -20, image: 'malus.png', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 const greenwashingItem = { name: 'Greenwashing', points: -40, image: 'greenwashing.png', sound: 'greenwashing.wav', fastSpeed: true, maxSpawns: 2, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 const climateChangeItem = { name: 'Climate Change', points: -15, image: 'ny.png', sound: 'ny.wav', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
@@ -201,7 +204,6 @@ const gretaItem = { name: 'Tiny Greta', points: '+10 seconds', image: 'greta.png
 const trumpItem = { name: 'Mr Trump', points: 'Sets score at -20', image: 'trump.png', sound: 'trump.wav', fastSpeed: true, isEasterEgg: true, setScore: -20 }; // Sets score to -20
 const grandmaItem = { name: 'Grandma\'s Recipes', points: 'Slow items for 5 seconds', image: 'grandma.png', sound: 'grandma.wav', fastSpeed: true, isEasterEgg: true, slowItems: true }; // Slows items for 5 seconds
 const bearItem = { name: 'Polar Bear', points: 'Fast items for 5 seconds', image: 'bear.png', sound: 'bear.mp3', fastSpeed: true, isEasterEgg: true, fastItems: true }; // Makes items faster for 5 seconds
-const timePlusItem = { name: 'Time Plus', points: '+ 5 seconds', image: '5sec.png', sound: '5sec.wav', fastSpeed: true, isEasterEgg: true, addTime: 5 }; // Adds 5 seconds to timer
 
 // Positive behaviors
 const positiveBehaviors = [
@@ -416,6 +418,9 @@ swipeArea.addEventListener('touchcancel', function(e) {
     // Load bonus and malus images
     itemImages[bonusItem.name] = new Image();
     itemImages[bonusItem.name].src = `assets/images/${bonusItem.image}`;
+    
+    itemImages[timePlusItem.name] = new Image();
+    itemImages[timePlusItem.name].src = `assets/images/${timePlusItem.image}`;
     
     itemImages[malusItem.name] = new Image();
     itemImages[malusItem.name].src = `assets/images/${malusItem.image}`;
@@ -697,6 +702,8 @@ function startGame() {
     bearSpawned = false; // Reset Bear spawned flag
     climateChangeSpawned = false; // Reset Climate Change spawned flag
     timePlusSpawned = false; // Reset Time Plus spawned flag
+    timePlusDelayActive = false; // Reset Time Plus delay flag
+    timePlusDelayUntil = 0; // Reset Time Plus delay point
     countdownSoundPlayed = false; // Reset countdown sound flag
     spawnedBehaviors = {}; // Reset spawned behaviors tracking
     greenwashingSpawnCount = 0; // Reset greenwashing spawn count
@@ -807,6 +814,7 @@ function spawnItem() {
         }
     }
     
+    
     // Malus can spawn anytime during the game with increasing probability toward the end
     if (!malusSpawned) {
         // Probability increases as game progresses
@@ -872,9 +880,25 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Time Plus - can spawn anytime with low probability
-    if (!timePlusSpawned) {
-        const timePlusChance = 0.006; // 0.6% chance each spawn cycle
+    // Time Plus can spawn anytime during the game with a more randomized timing
+    if (!timePlusSpawned && !timePlusDelayActive) {
+        // Set a random delay before Time Plus can spawn
+        // This will make it appear at different times in different games
+        const shouldSetDelay = Math.random() < 0.1; // 10% chance each spawn cycle to set the delay
+        
+        if (shouldSetDelay) {
+            // Set a random delay point in the game (between 0 and 100% of game time)
+            timePlusDelayUntil = GAME_DURATION - (Math.random() * GAME_DURATION);
+            timePlusDelayActive = true;
+            console.log(`Time Plus will be available when timer reaches ${timePlusDelayUntil} seconds`);
+        }
+    }
+    
+    // Once the delay is active, check if we've reached the delay point
+    if (!timePlusSpawned && timePlusDelayActive && timeLeft <= timePlusDelayUntil) {
+        // Now Time Plus can spawn with a moderate chance
+        const timePlusChance = 0.08; // 8% chance each spawn cycle after delay point is reached
+        
         if (Math.random() < timePlusChance) {
             spawnSpecialItem(timePlusItem);
             timePlusSpawned = true;
@@ -1062,8 +1086,8 @@ function updateItems() {
             // Mark as counted to prevent multiple counts
             item.counted = true;
             
-            // Handle special effects for Easter Eggs
-            if (item.type.isEasterEgg) {
+            // Handle special effects for Easter Eggs and Time Plus
+            if (item.type.isEasterEgg || item.type.name === timePlusItem.name) {
                 if (item.type.name === gretaItem.name) {
                     // Tiny Greta adds 10 seconds to the timer
                     timeLeft += item.type.addTime;
@@ -1072,8 +1096,18 @@ function updateItems() {
                 } else if (item.type.name === timePlusItem.name) {
                     // Time Plus adds 5 seconds to the timer
                     timeLeft += item.type.addTime;
-                    // Create special animation for added time
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, `+${item.type.addTime}s`);
+                    // Create special animation for added time with green color
+                    const animation = {
+                        x: item.x + ITEM_SIZE/2,
+                        y: item.y,
+                        points: `+${item.type.addTime}s`,
+                        opacity: 1.0,
+                        createdAt: Date.now(),
+                        isText: true,
+                        duration: 1000,
+                        color: '#4CAF50' // Force green color
+                    };
+                    pointsAnimations.push(animation);
                 } else if (item.type.name === trumpItem.name) {
                     // Mr Trump sets the score to -20
                     score = item.type.setScore;
@@ -1286,8 +1320,8 @@ function drawPointsAnimations() {
         
         if (animation.isText) {
             // For text messages (Easter Eggs)
-            // Use a special color for Easter Egg messages
-            const color = animation.points.includes('+') ? '#4CAF50' : '#F44336'; // Green for positive, red for negative
+            // Use custom color if provided, otherwise determine based on content
+            const color = animation.color || (animation.points.includes('+') ? '#4CAF50' : '#F44336'); // Green for positive, red for negative
             
             // Set color with opacity for fade-out effect
             ctx.fillStyle = `${color}${Math.floor(animation.opacity * 255).toString(16).padStart(2, '0')}`;
@@ -1322,7 +1356,7 @@ function spawnSpecialItem(itemType) {
         y: initialY,
         previousY: initialY, // Track previous position for movement direction
         type: itemType,
-        isGreen: itemType.points > 0, // Bonus is green, malus is not
+        isGreen: itemType.isGreen !== undefined ? itemType.isGreen : (itemType.points > 0), // Use explicit isGreen if available, otherwise determine from points
         isSpecial: true, // Flag to identify special items
         counted: false, // Flag to prevent counting an item multiple times
         fastSpeed: itemType.fastSpeed || false // Set fastSpeed flag if the item has it
@@ -1574,8 +1608,9 @@ function displayShoppingList(container) {
     bonusHeader.style.color = 'white';
     bonusSection.appendChild(bonusHeader);
     
-    // Add Garden Gnome to bonus section
+    // Add Garden Gnome and Time Plus to bonus section
     addItemToShoppingList(bonusSection, bonusItem);
+    addItemToShoppingList(bonusSection, timePlusItem);
     
     // Create section for good behaviors
     const goodBehaviorsSection = document.createElement('div');
@@ -1657,7 +1692,6 @@ function displayShoppingList(container) {
     addItemToShoppingList(easterEggsSection, trumpItem);
     addItemToShoppingList(easterEggsSection, grandmaItem);
     addItemToShoppingList(easterEggsSection, bearItem);
-    addItemToShoppingList(easterEggsSection, timePlusItem);
     
     // Add all sections to the container in the new order
     container.appendChild(goodItemsSection);
@@ -1705,6 +1739,10 @@ function addItemToShoppingList(container, item) {
         // Use purple color for Easter Egg effects
         pointsElement.className = 'collected-item-points';
         pointsElement.style.color = '#9C27B0'; // Purple color matching the Easter Egg header
+        pointsElement.textContent = item.points;
+    } else if (item.name === 'Time Plus') {
+        // Special handling for Time Plus in shopping list
+        pointsElement.className = 'collected-item-points positive';
         pointsElement.textContent = item.points;
     } else {
         // Regular items use the standard positive/negative classes
@@ -1919,6 +1957,10 @@ function addItemToList(parentElement, itemName, itemData) {
         } else if (itemName === 'Polar Bear') {
             pointsElement.textContent = 'Items faster for 5 seconds';
         }
+    } else if (itemName === 'Time Plus') {
+        // Special handling for Time Plus (now a bonus item)
+        pointsElement.className = 'collected-item-points positive';
+        pointsElement.textContent = `+ 5 seconds`;
     } else {
         // Regular items
         pointsElement.className = `collected-item-points ${itemData.isGreen ? 'positive' : 'negative'}`;
