@@ -7,12 +7,12 @@ Get ready to move your cart, sharpen your reflexes, and help the environment!
 
 ---
 
-## 🛒 How to Play
+## 🕹️ How to Play
 
 **Catch It Green!**
 
 - **Take a look at the shopping list first!**  
-- Use the **Left** and **Right** arrow keys to move the cart
+- Use the **left** and **right** arrow keys to move the cart (swipe on mobile)
 - **Catch as many low carbon footprint items** as you can to gain positive points!
 - **Avoid high carbon footprint items** that will lower your score!
 
@@ -20,7 +20,7 @@ Get ready to move your cart, sharpen your reflexes, and help the environment!
 
 ## 🌿 Special Challenge
 
-> **If you collect all five items shown at the top of the screen, the supermarket will buy a tokenized carbon credit thanks to your eco-friendly shopping!**
+If you collect all five items shown at the top of the screen, the supermarket will buy a tokenized carbon credit thanks to your eco-friendly shopping!
 
 Can you complete the shopping list and become an eco-hero? 🌎🛒
 
@@ -36,11 +36,23 @@ Can you complete the shopping list and become an eco-hero? 🌎🛒
 
 ---
 
+>**The few things I know, I have also learned them by observing the work of others.
+In the same spirit, I share my project — not only to be enjoyed and consulted but also in the hope that others may improve it.**
+
+---
+
 ## 🚀 Play Now
 
 👉 [Play Catch It Green!](https://vonniedermayer.github.io/Catch-It-Green/)
 
 ---
+
+## 🔮 Future Updates
+
+- More items
+- New game modes
+- Enhanced smartphone experience
+
 
 ## 📜 Credits
 
@@ -52,21 +64,20 @@ Intended for bored recruiters, random gamers, sustainability enthusiasts, and pi
 ## 📈 Project Goals
 
 This project was created as a fun and creative way to combine:
-- Digital skills
 - Sustainability education
-- Gaming and pixel art  
-...and to showcase my passion for **sustainability** and **programming**!
+- Gaming and pixel art
+- My passion for programming
 
 ---
 
 ## 📢 Notes
 
-- All icons and assets used are either generated or sourced from free-to-use platforms.
-- This game is designed to be lightweight and accessible from desktop devices (best experience).
+- All icons and assets used are either generated or sourced from free-to-use platforms
+- This game is designed to be lightweight and accessible from desktop devices (best experience)
 
 ---
 
-## ⭐ Connect with me
+## 🤝🏻 Connect with me
 
 [LinkedIn Profile](https://www.linkedin.com/in/natalilorenzo) 
 
