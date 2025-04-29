@@ -28,6 +28,7 @@ let soundManager = {
             this.preloadSound('countdown.wav');
             this.preloadSound('coin.wav');
             this.preloadSound('score.wav');
+            this.preloadSound('wizard.wav');
             
             // Mark as initialized
             this.initialized = true;
@@ -1428,6 +1429,7 @@ function initAudio() {
         loadSound('grandma.wav');
         loadSound('bear.mp3');
         loadSound('coin.wav');
+        loadSound('wizard.wav');
         
         // Load behavior sounds
         positiveBehaviors.concat(negativeBehaviors).forEach(behavior => {
@@ -2014,7 +2016,33 @@ function endGame() {
     let feedback;
     let medalSrc;
     
-    if (score >= 180) {
+    // Remove any existing wizard title from previous games
+    const existingWizardTitle = document.querySelector('.wizard-title');
+    if (existingWizardTitle) {
+        existingWizardTitle.remove();
+    }
+    
+    // Remove wizard medal class if it exists from previous games
+    medalImage.classList.remove('wizard-medal');
+    
+    if (score >= 320) {
+        // Create and add the Mysterious Wizard title
+        const wizardTitle = document.createElement('h3');
+        wizardTitle.textContent = "Mysterious Wizard";
+        wizardTitle.className = "wizard-title";
+        document.querySelector('.result-container').prepend(wizardTitle);
+        
+        feedback = "A rare shopper indeed… may your footprint vanish like vegetable peels in the soil.";
+        medalSrc = "assets/images/wizard.png";
+        
+        // Make the medal larger
+        setTimeout(() => {
+            medalImage.classList.add('wizard-medal');
+        }, 10);
+        
+        // Play the special wizard sound
+        soundManager.playSound('wizard.wav', { volume: 1.0, forcePlay: true });
+    } else if (score >= 180) {
         feedback = "Eco-Warrior! Your cart is greener than a forest!";
         medalSrc = "assets/images/medal_1.png";
     } else if (score >= 130) {

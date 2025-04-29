@@ -769,3 +769,39 @@ body {
         font-size: 12px;
     }
 }
+
+/* Wizard achievement styles */
+.wizard-title {
+    color: #FFD700; /* Gold color */
+    font-size: 24px;
+    margin: 0 0 10px 0;
+    text-align: center;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700;
+    }
+    to {
+        text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
+    }
+}
+
+.wizard-medal {
+    width: 170px; /* Larger than the standard 100px */
+    height: 170px;
+    object-fit: contain;
+}
+
+/* Mobile responsive adjustments for wizard */
+@media (max-width: 800px) {
+    .wizard-title {
+        font-size: 20px;
+    }
+    
+    .wizard-medal {
+        width: 135px;
+        height: 135px;
+    }
+}
