@@ -166,7 +166,9 @@ let gameItems = [];
 let cartX = 0;
 let cartY = 0;
 let keysPressed = {};
-let cartImage; // Image for the player's cart
+let cartImage; // Image for the player's cart (currently displayed)
+let cartImage1; // Image for the empty cart
+let cartImage2; // Image for the filled cart
 let backgroundImage; // Image for the game background
 let pointsAnimations = []; // Array to store point animations
 let collectedItems = []; // Array to store collected items
@@ -176,6 +178,8 @@ let gretaSpawned = false; // Track if Tiny Greta has been spawned
 let trumpSpawned = false; // Track if Mr Trump has been spawned
 let grandmaSpawned = false; // Track if Grandma's Recipes has been spawned
 let bearSpawned = false; // Track if Polar Bear has been spawned
+let climateChangeSpawned = false; // Track if Climate Change has been spawned
+let timePlusSpawned = false; // Track if Time Plus has been spawned
 let spawnedBehaviors = {}; // Track which behaviors have been spawned
 let challengeItems = []; // Array to store the 5 challenge items
 let collectedChallengeItems = {}; // Object to track collected challenge items
@@ -190,12 +194,14 @@ let itemsFastEndTime = 0; // When the fast effect ends
 const bonusItem = { name: 'Garden Gnome', points: 25, image: 'bonus.png', fastSpeed: true, smokeColor: 'rgba(100, 200, 255, 0.8)' }; // Light blue haze
 const malusItem = { name: 'Pollutant Barrell', points: -20, image: 'malus.png', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 const greenwashingItem = { name: 'Greenwashing', points: -40, image: 'greenwashing.png', sound: 'greenwashing.wav', fastSpeed: true, maxSpawns: 2, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
+const climateChangeItem = { name: 'Climate Change', points: -15, image: 'ny.png', sound: 'ny.wav', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 
 // Easter Eggs
 const gretaItem = { name: 'Tiny Greta', points: '+10 seconds', image: 'greta.png', sound: 'greta.wav', fastSpeed: true, isEasterEgg: true, addTime: 10 }; // Adds 10 seconds to timer
 const trumpItem = { name: 'Mr Trump', points: 'Sets score at -20', image: 'trump.png', sound: 'trump.wav', fastSpeed: true, isEasterEgg: true, setScore: -20 }; // Sets score to -20
 const grandmaItem = { name: 'Grandma\'s Recipes', points: 'Slow items for 5 seconds', image: 'grandma.png', sound: 'grandma.wav', fastSpeed: true, isEasterEgg: true, slowItems: true }; // Slows items for 5 seconds
 const bearItem = { name: 'Polar Bear', points: 'Fast items for 5 seconds', image: 'bear.png', sound: 'bear.mp3', fastSpeed: true, isEasterEgg: true, fastItems: true }; // Makes items faster for 5 seconds
+const timePlusItem = { name: 'Time Plus', points: '+ 5 seconds', image: '5sec.png', sound: '5sec.wav', fastSpeed: true, isEasterEgg: true, addTime: 5 }; // Adds 5 seconds to timer
 
 // Positive behaviors
 const positiveBehaviors = [
@@ -417,6 +423,9 @@ swipeArea.addEventListener('touchcancel', function(e) {
     itemImages[greenwashingItem.name] = new Image();
     itemImages[greenwashingItem.name].src = `assets/images/${greenwashingItem.image}`;
     
+    itemImages[climateChangeItem.name] = new Image();
+    itemImages[climateChangeItem.name].src = `assets/images/${climateChangeItem.image}`;
+    
     // Load Easter Egg images
     itemImages[gretaItem.name] = new Image();
     itemImages[gretaItem.name].src = `assets/images/${gretaItem.image}`;
@@ -476,18 +485,24 @@ if (isMobileDevice()) {
     // Event listener for back button
     document.getElementById('backButton').addEventListener('click', hideFactsScreen);
     
-    // Load cart image
-    cartImage = new Image();
-    cartImage.src = 'assets/images/cart.png';
+    // Load both cart images
+    cartImage1 = new Image();
+    cartImage1.src = 'assets/images/cart.png';
     
-    // When the cart image is loaded, draw it
-    cartImage.onload = function() {
+    cartImage2 = new Image();
+    cartImage2.src = 'assets/images/cart2.png';
+    
+    // Set the initial cart image to the empty cart
+    cartImage = cartImage1;
+    
+    // When the cart images are loaded, draw the initial cart
+    cartImage1.onload = function() {
         // Draw cart using the loaded image
         ctx.drawImage(cartImage, cartX, cartY, CART_WIDTH, CART_HEIGHT);
     };
     
-    // If the image fails to load, use the fallback rectangle
-    cartImage.onerror = function() {
+    // If the first image fails to load, use the fallback rectangle
+    cartImage1.onerror = function() {
         // Fallback to rectangle if image isn't loaded
         ctx.fillStyle = '#FFD700'; // Gold color for cart
         ctx.fillRect(cartX, cartY, CART_WIDTH, CART_HEIGHT);
@@ -680,6 +695,8 @@ function startGame() {
     trumpSpawned = false; // Reset Trump spawned flag
     grandmaSpawned = false; // Reset Grandma spawned flag
     bearSpawned = false; // Reset Bear spawned flag
+    climateChangeSpawned = false; // Reset Climate Change spawned flag
+    timePlusSpawned = false; // Reset Time Plus spawned flag
     countdownSoundPlayed = false; // Reset countdown sound flag
     spawnedBehaviors = {}; // Reset spawned behaviors tracking
     greenwashingSpawnCount = 0; // Reset greenwashing spawn count
@@ -694,7 +711,7 @@ function startGame() {
     soundManager.handleInteraction();
     
     // Reset cart image to empty cart at the start of each game
-    cartImage.src = 'assets/images/cart.png';
+    cartImage = cartImage1;
     
     // Select challenge items
     selectChallengeItems();
@@ -855,6 +872,27 @@ function spawnItem() {
         }
     }
     
+    // Easter Egg: Time Plus - can spawn anytime with extremely low probability
+    if (!timePlusSpawned) {
+        const timePlusChance = 0.003; // 0.3% chance each spawn cycle
+        if (Math.random() < timePlusChance) {
+            spawnSpecialItem(timePlusItem);
+            timePlusSpawned = true;
+            return;
+        }
+    }
+    
+    // Climate Change can spawn anytime during the game with increasing probability toward the end
+    if (!climateChangeSpawned) {
+        // Probability increases as game progresses
+        const climateChangeChance = 0.05 + (0.35 * ((GAME_DURATION - timeLeft) / GAME_DURATION));
+        if (Math.random() < climateChangeChance) {
+            spawnSpecialItem(climateChangeItem);
+            climateChangeSpawned = true;
+            return;
+        }
+    }
+    
     // 8% chance to spawn a positive behavior
     if (Math.random() < 0.08) {
         // Filter out behaviors that have already been spawned
@@ -997,11 +1035,19 @@ function updateItems() {
                 itemsFast = false;
             }
             
-            // Move item down (twice as fast for items with fastSpeed)
+            // Move item down with different speeds based on item type
             if (item.fastSpeed) {
-                item.y += ITEM_SPEED * 2; // Double speed for fast items
+                // Check if this is a bonus or malus item (they move at 2x speed)
+                if ((item.type.name === bonusItem.name || 
+                     item.type.name === malusItem.name || 
+                     item.type.name === greenwashingItem.name || 
+                     item.type.name === climateChangeItem.name)) {
+                    item.y += ITEM_SPEED * 2; // 2x speed for bonus and malus items
+                } else {
+                    item.y += ITEM_SPEED * 1.5; // 1.5x speed for easter eggs
+                }
             } else {
-                item.y += ITEM_SPEED;
+                item.y += ITEM_SPEED; // Normal speed for regular items
             }
         }
         
@@ -1020,6 +1066,11 @@ function updateItems() {
             if (item.type.isEasterEgg) {
                 if (item.type.name === gretaItem.name) {
                     // Tiny Greta adds 10 seconds to the timer
+                    timeLeft += item.type.addTime;
+                    // Create special animation for added time
+                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, `+${item.type.addTime}s`);
+                } else if (item.type.name === timePlusItem.name) {
+                    // Time Plus adds 5 seconds to the timer
                     timeLeft += item.type.addTime;
                     // Create special animation for added time
                     createPointsAnimation(item.x + ITEM_SIZE/2, item.y, `+${item.type.addTime}s`);
@@ -1337,6 +1388,7 @@ function initAudio() {
         loadSound('bonus.wav');
         loadSound('malus.wav');
         loadSound('greenwashing.wav');
+        loadSound('ny.wav');
         loadSound('greta.wav');
         loadSound('trump.wav');
         loadSound('grandma.wav');
@@ -1410,6 +1462,8 @@ function playCollectSound(isGreen, item) {
             soundFile = 'malus.wav';
         } else if (item.type.name === greenwashingItem.name) {
             soundFile = 'greenwashing.wav';
+        } else if (item.type.name === climateChangeItem.name) {
+            soundFile = 'ny.wav';
         } else if (item.type.name === gretaItem.name) {
             soundFile = 'greta.wav';
         } else if (item.type.name === trumpItem.name) {
@@ -1418,6 +1472,8 @@ function playCollectSound(isGreen, item) {
             soundFile = 'grandma.wav';
         } else if (item.type.name === bearItem.name) {
             soundFile = 'bear.mp3';
+        } else if (item.type.name === timePlusItem.name) {
+            soundFile = '5sec.wav';
         }
     } 
     // Check if this is a behavior item
@@ -1440,8 +1496,8 @@ function updateTimer() {
     
     // Check if we're at the halfway point (15 seconds) to change the cart image
     if (timeLeft === GAME_DURATION / 2) {
-        // Change the cart image to cart2.png to show it's filling up
-        cartImage.src = 'assets/images/cart2.png';
+        // Switch to the filled cart image (already preloaded)
+        cartImage = cartImage2;
     }
     
     // Play countdown sound 4 seconds before the end
@@ -1564,9 +1620,10 @@ function displayShoppingList(container) {
     malusHeader.style.color = 'white';
     malusSection.appendChild(malusHeader);
     
-    // Add Pollutant and Greenwashing to malus section
+    // Add Pollutant, Greenwashing, and Climate Change to malus section
     addItemToShoppingList(malusSection, malusItem);
     addItemToShoppingList(malusSection, greenwashingItem);
+    addItemToShoppingList(malusSection, climateChangeItem);
     
     // Create section for bad behaviors
     const badBehaviorsSection = document.createElement('div');
@@ -1600,6 +1657,7 @@ function displayShoppingList(container) {
     addItemToShoppingList(easterEggsSection, trumpItem);
     addItemToShoppingList(easterEggsSection, grandmaItem);
     addItemToShoppingList(easterEggsSection, bearItem);
+    addItemToShoppingList(easterEggsSection, timePlusItem);
     
     // Add all sections to the container in the new order
     container.appendChild(goodItemsSection);
@@ -1914,16 +1972,16 @@ function endGame() {
     let feedback;
     let medalSrc;
     
-    if (score >= 150) {
+    if (score >= 180) {
         feedback = "Eco-Warrior! Your cart is greener than a forest!";
         medalSrc = "assets/images/medal_1.png";
-    } else if (score >= 100) {
+    } else if (score >= 130) {
         feedback = "Green Star! You are shopping sustainably";
         medalSrc = "assets/images/medal_2.png";
-    } else if (score >= 50) {
+    } else if (score >= 80) {
         feedback = "Eco-Apprentice! Almost there, keep it up!";
         medalSrc = "assets/images/medal_3.png";
-    } else if (score >= 0) {
+    } else if (score >= 30) {
         feedback = "Plastic Panic! Let's learn a bit more about eco choices";
         medalSrc = "assets/images/medal_4.png";
     } else {
