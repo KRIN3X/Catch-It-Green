@@ -37,7 +37,7 @@ Can you complete the shopping list and become an eco-hero? 🌎🛒
 ---
 
 >**The few things I know, I have also learned them by observing the work of others.
-In the same spirit, I share my project — not only to be enjoyed and consulted but also in the hope that others may improve it.”**
+In the same spirit, I share my project — not only to be enjoyed and consulted but also in the hope that others may improve it.**
 
 ---
 
