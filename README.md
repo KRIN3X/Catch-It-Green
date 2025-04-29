@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/images/cover.png" alt="Catch It Green Cover" width="800">
+</p>
+
 # 🎮 Catch It Green! 🌱
 
 ![Built with HTML, CSS & JavaScript](https://img.shields.io/badge/Built%20with-HTML%2C%20CSS%20%26%20JavaScript-4CAF50?style=for-the-badge&logo=javascript)
