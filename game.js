@@ -2025,7 +2025,7 @@ function endGame() {
     // Remove wizard medal class if it exists from previous games
     medalImage.classList.remove('wizard-medal');
     
-    if (score >= 320) {
+    if (score >= 330) {
         // Create and add the Mysterious Wizard title
         const wizardTitle = document.createElement('h3');
         wizardTitle.textContent = "Mysterious Wizard";
