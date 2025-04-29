@@ -83,7 +83,8 @@ This project was created as a fun and creative way to combine:
 
 ## 💬 Suggestions
 
-If you have ideas for improvements, feel free to open an [Issue](https://github.com/vonNiedermayer/Catch-It-Green/issues)!  
+Have an idea to improve *Catch It Green*? Found a bug?
+Feel free to open an [Issue](https://github.com/vonNiedermayer/Catch-It-Green/issues)!  
 I welcome all feedback and suggestions.
 
 ---
