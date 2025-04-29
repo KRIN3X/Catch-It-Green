@@ -81,6 +81,13 @@ This project was created as a fun and creative way to combine:
 
 ---
 
+## 💬 Suggestions
+
+If you have ideas for improvements, feel free to open an [Issue](https://github.com/vonNiedermayer/Catch-It-Green/issues)!  
+I welcome all feedback and suggestions.
+
+---
+
 ## 🤝🏻 Connect with me
 
 [LinkedIn Profile](https://www.linkedin.com/in/natalilorenzo) 
