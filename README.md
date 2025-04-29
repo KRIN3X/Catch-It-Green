@@ -30,6 +30,13 @@ Can you complete the shopping list and become an eco-hero? 🌎🛒
 
 ---
 
+## 🕵️‍♂️ Can you unlock the Mysterious Character?
+
+Only the most sustainable shoppers — those scoring 320 points or more — will catch a glimpse of a secret pixel-art figure hidden deep in the game.
+Think you’ve seen him? Drop his name or a screenshot in the comments below! 👀🌱
+
+---
+
 ## 📦 Built With
 
 - **Visual Studio Code** (development environment)
