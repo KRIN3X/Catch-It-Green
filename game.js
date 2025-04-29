@@ -832,9 +832,9 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Tiny Greta - can spawn anytime with extremely low probability
+    // Easter Egg: Tiny Greta - can spawn anytime with low probability
     if (!gretaSpawned) {
-        const gretaChance = 0.003; // 0.3% chance each spawn cycle
+        const gretaChance = 0.006; // 0.6% chance each spawn cycle
         if (Math.random() < gretaChance) {
             spawnSpecialItem(gretaItem);
             gretaSpawned = true;
@@ -842,9 +842,9 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Mr Trump - can spawn anytime with extremely low probability
+    // Easter Egg: Mr Trump - can spawn anytime with low probability
     if (!trumpSpawned) {
-        const trumpChance = 0.003; // 0.3% chance each spawn cycle
+        const trumpChance = 0.006; // 0.6% chance each spawn cycle
         if (Math.random() < trumpChance) {
             spawnSpecialItem(trumpItem);
             trumpSpawned = true;
@@ -852,9 +852,9 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Grandma's Recipes - can spawn anytime with extremely low probability
+    // Easter Egg: Grandma's Recipes - can spawn anytime with low probability
     if (!grandmaSpawned) {
-        const grandmaChance = 0.003; // 0.3% chance each spawn cycle
+        const grandmaChance = 0.006; // 0.6% chance each spawn cycle
         if (Math.random() < grandmaChance) {
             spawnSpecialItem(grandmaItem);
             grandmaSpawned = true;
@@ -862,9 +862,9 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Polar Bear - can spawn anytime with extremely low probability
+    // Easter Egg: Polar Bear - can spawn anytime with low probability
     if (!bearSpawned) {
-        const bearChance = 0.003; // 0.3% chance each spawn cycle
+        const bearChance = 0.006; // 0.6% chance each spawn cycle
         if (Math.random() < bearChance) {
             spawnSpecialItem(bearItem);
             bearSpawned = true;
@@ -872,9 +872,9 @@ function spawnItem() {
         }
     }
     
-    // Easter Egg: Time Plus - can spawn anytime with extremely low probability
+    // Easter Egg: Time Plus - can spawn anytime with low probability
     if (!timePlusSpawned) {
-        const timePlusChance = 0.003; // 0.3% chance each spawn cycle
+        const timePlusChance = 0.006; // 0.6% chance each spawn cycle
         if (Math.random() < timePlusChance) {
             spawnSpecialItem(timePlusItem);
             timePlusSpawned = true;
