@@ -1895,19 +1895,7 @@ function endGame() {
     // Play game over sound using sound manager
     // For mobile devices, we need to handle audio differently
     if (isMobileDevice()) {
-        // Add a click/touch event to the game over screen to play sound
-        // This ensures sound plays in response to user interaction
-        const playScoreSound = function() {
-            soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
-            gameOverElement.removeEventListener('click', playScoreSound);
-            gameOverElement.removeEventListener('touchstart', playScoreSound);
-        };
-        
-        // Add event listeners for both click and touch
-        gameOverElement.addEventListener('click', playScoreSound, { once: true });
-        gameOverElement.addEventListener('touchstart', playScoreSound, { once: true });
-        
-        // Also try to play it directly with a longer delay (300ms instead of 100ms)
+        // Play the sound with a slight delay to ensure audio context is ready
         setTimeout(() => {
             soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
         }, 300);
