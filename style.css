@@ -1,807 +1,1151 @@
-/* General styling */
+/* Import Font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 body {
-    margin: 0;
-    padding: 0;
-    font-family: 'Press Start 2P', 'Courier New', monospace;
-    background-color: #222;
-    color: #fff;
+    background-color: #0f380f; /* Verde Game Boy */
+    font-family: 'Press Start 2P', sans-serif;
+    color: #ffffff;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow-x: hidden; /* Prevent horizontal scrolling */
-    width: 100%;
+    margin: 0;
+    padding: 20px;
     box-sizing: border-box;
 }
 
-.game-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+.retro-container {
+    width: 90%;
+    max-width: 600px; /* Limita la larghezza su schermi grandi */
+    background-color: #000000; /* Finestra nera */
+    border: 4px solid #ffffff; /* Bordo iniziale */
     padding: 20px;
-    background-color: #333;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Effetto glow */
+    position: relative; /* Necessario per il bordo animato */
 }
 
-/* Game header with score, challenge, and timer */
+/* Bordo animato */
+.retro-border {
+    border: 4px dashed #a8ff60; /* Restored dashed border for consistency */
+    background-color: #0f380f; /* Inner background */
+    padding: 10px; /* Padding inside the border */
+    position: relative; /* Needed for absolute positioning of children like close button */
+    animation: blink-border 1s infinite step-end; /* Restored animation */
+}
+
+@keyframes blink-border {
+    50% {
+        border-color: #00ffcc;
+    }
+}
+
+.retro-content {
+    background-color: #0f380f; /* Match border background */
+    padding: 20px; /* Padding for content inside */
+    color: #fff;
+    text-align: center;
+}
+
+.text-area {
+    font-size: 14px; /* Corpo testo */
+    line-height: 1.6;
+    text-align: center;
+    border-bottom: 2px solid #ffffff; /* Separatore */
+    padding-bottom: 15px;
+}
+
+.text-area p {
+    margin: 0;
+}
+
+#startScreen .text-area {
+    margin-bottom: 0; /* Rimuovo margine inferiore se uso margin-top su .menu */
+    border-bottom: 1px dashed #a8ff60; /* Linea bianca sotto il testo */
+    padding-bottom: 20px; /* Spazio tra testo e linea */
+}
+
+/* Menu Styles */
+.menu {
+    display: flex;
+    flex-direction: column; /* Buttons stacked vertically */
+    gap: 10px; /* Space between buttons */
+    align-items: center; /* Center buttons horizontally */
+    width: 100%; /* Ensure it takes width for centering */
+    margin-top: 20px; /* AGGIUNTO: Spazio sopra i pulsanti, sotto la linea */
+}
+
+.menu {
+    display: flex;
+    flex-direction: column; /* Pulsanti in colonna su desktop */
+    align-items: center;
+    gap: 15px; /* Spazio tra i pulsanti */
+}
+
+.retro-button {
+    font-family: 'Press Start 2P', sans-serif;
+    font-size: 16px; /* Dimensione testo pulsanti */
+    padding: 10px 20px;
+    background-color: #0f380f; /* Sfondo verde */
+    color: #ffffff; /* Testo bianco */
+    border: 2px solid #ffffff; /* Bordo bianco */
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: background-color 0.2s, color 0.2s, box-shadow 0.2s;
+    box-shadow: 3px 3px 0px #a8ff60; /* Ombra stile pixel */
+}
+
+.retro-button:hover,
+.retro-button:focus {
+    background-color: #a8ff60; /* Evidenziazione al passaggio */
+    color: #000000; /* Testo nero */
+    box-shadow: 3px 3px 0px #ffffff;
+    outline: none;
+}
+
+.retro-button:active {
+    background-color: #00ffcc;
+    box-shadow: 1px 1px 0px #ffffff;
+    transform: translate(2px, 2px); /* Effetto pressione */
+}
+
+/* Commentata per uniformare allo stile base .close-button */
+/*
+.retro-button.close-button {
+    position: absolute;
+    top: 8px; 
+    right: 8px; 
+    padding: 2px 6px; 
+    font-size: 14px; 
+    min-width: auto;
+    line-height: 1;
+    border: 1px solid #a8ff60;
+    background-color: #0f380f;
+    color: #a8ff60;
+    z-index: 10; 
+    cursor: pointer; 
+}
+.retro-button.close-button:hover {
+    background-color: #a8ff60;
+    color: #0f380f;
+}
+*/
+
+/* Responsive */
+@media (max-width: 768px) {
+    .retro-container {
+        width: 100%;
+        margin-top: 20px; /* Spazio dall'alto su mobile */
+    }
+
+    .menu {
+        flex-direction: row; /* Pulsanti in riga su mobile */
+        overflow-x: auto; /* Scroll orizzontale */
+        justify-content: flex-start; /* Allinea a sinistra */
+        padding-bottom: 10px; /* Spazio per lo scroll */
+        scrollbar-width: thin; /* Stile scrollbar */
+        scrollbar-color: #a8ff60 #0f380f;
+    }
+
+    .menu::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .menu::-webkit-scrollbar-track {
+        background: #0f380f;
+    }
+
+    .menu::-webkit-scrollbar-thumb {
+        background-color: #a8ff60;
+        border-radius: 4px;
+        border: 1px solid #0f380f;
+    }
+
+    .retro-button {
+        flex-shrink: 0; /* Impedisce ai pulsanti di restringersi */
+        font-size: 14px; /* Riduci dimensione font su mobile */
+        padding: 8px 15px;
+    }
+
+    .text-area {
+        font-size: 12px; /* Riduci dimensione font testo su mobile */
+    }
+}
+
+/* Stili aggiuntivi per titoli/sottotitoli se necessario */
+h1 { /* Esempio titolo */
+    font-size: 24px;
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+h2 { /* Esempio sottotitolo */
+    font-size: 18px;
+    color: #a8ff60;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Stili per la Shopping List Modal */
+
+.modal-overlay {
+    position: fixed; /* Fisso rispetto alla viewport */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8); /* Sfondo semi-trasparente più scuro */
+    display: none; /* Nascosto di default */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Sopra gli altri contenuti */
+    padding: 15px; /* Padding per distanziare dai bordi schermo */
+    box-sizing: border-box;
+    /* Opzionale: transizione per l'apparizione */
+    /* opacity: 0;
+    transition: opacity 0.3s ease-in-out; */
+}
+
+/* Opzionale: classe per animare l'entrata */
+/* .modal-overlay.visible {
+    opacity: 1;
+} */
+
+.shopping-list-container {
+    font-family: 'Press Start 2P', monospace;
+    background-color: #003300; /* Verde scuro */
+    border: 2px solid #00ffcc;
+    padding: 20px;
+    color: #ffffff; /* Testo chiaro default */
+    width: 90%;
+    max-width: 550px; /* Leggermente più largo */
+    max-height: 85vh; /* Altezza massima */
+    display: flex;
+    flex-direction: column;
+    position: relative; /* Per posizionare il pulsante chiusura */
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.7); /* Ombra più pronunciata */
+    /* Opzionale: animazione entrata */
+    /* transform: scale(0.9);
+    transition: transform 0.3s ease-in-out; */
+}
+
+/* Opzionale: animazione entrata */
+/* .modal-overlay.visible .shopping-list-container {
+    transform: scale(1);
+} */
+
+.close-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: 2px solid #a8ff60;
+    border-radius: 50%; /* Cerchio */
+    font-family: sans-serif;
+    font-size: 18px; /* Dimensione X */
+    font-weight: bold;
+    color: #a8ff60;
+    cursor: pointer;
+    padding: 0;
+    width: 28px; /* Dimensione bottone */
+    height: 28px; /* Dimensione bottone */
+    line-height: 24px; /* Centra la X verticalmente */
+    text-align: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+.close-button:hover {
+    background-color: #a8ff60;
+    color: #003300;
+}
+
+.shopping-list-title {
+    font-size: 18px;
+    color: #a8ff60; /* Verde lime brillante */
+    text-align: center;
+    text-transform: uppercase;
+    margin: 0;
+    margin-bottom: 15px; /* Spazio sotto il titolo */
+    padding-bottom: 10px;
+    border-bottom: 1px solid #00ffcc;
+}
+
+.shopping-list-content {
+    overflow-y: auto; /* Scroll verticale se necessario */
+    flex-grow: 1; /* Occupa lo spazio rimanente */
+    padding-right: 5px; /* Spazio per la scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: #a8ff60 #004d00; /* Colori scrollbar */
+}
+
+.shopping-list-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.shopping-list-content::-webkit-scrollbar-track {
+    background: #004d00; /* Sfondo traccia scrollbar */
+    border-radius: 4px;
+}
+
+.shopping-list-content::-webkit-scrollbar-thumb {
+    background-color: #a8ff60;
+    border-radius: 4px;
+    border: 1px solid #003300;
+}
+
+.shopping-list-content h3 { /* Titoli sezioni (Green Items, etc.) */
+    color: #00ffcc; /* Colore diverso per i titoli di sezione */
+    font-size: 15px;
+    margin-top: 15px;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    border-bottom: 1px dashed #00ffcc;
+    padding-bottom: 4px;
+}
+.shopping-list-content h3:first-child {
+    margin-top: 0;
+}
+
+.shopping-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px; /* Dimensione font item leggermente ridotta */
+    color: #e0ffe0; /* Testo corpo leggermente verde */
+}
+
+.shopping-list-item {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px dotted rgba(168, 255, 96, 0.4);
+    gap: 10px; /* Aumento leggero gap per spaziare dall'immagine più grande */
+}
+.shopping-list-item:last-child {
+    border-bottom: none;
+}
+
+.item-image {
+    width: 36px; /* Aumentato da 28px */
+    height: 36px; /* Aumentato da 28px */
+    object-fit: contain;
+    flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.1); /* Sfondo leggero per vedere meglio le immagini */
+    border-radius: 3px;
+}
+
+.item-name {
+    flex-grow: 1;
+    text-align: left;
+    color: #ffffff; /* Nome più bianco */
+    font-size: 14px; /* Mantenuto o aggiustare se necessario */
+}
+
+.item-effect {
+    text-align: right;
+    font-size: 12px;
+    color: #a8ff60;
+    flex-shrink: 0;
+    min-width: 60px; /* Mantenuto o aggiustare se necessario */
+    font-weight: bold;
+}
+
+/* Stile per item raccolti (esempio, non implementato qui) */
+.shopping-list-item.collected {
+    text-decoration: line-through;
+    opacity: 0.5;
+}
+.shopping-list-item.collected .item-effect {
+    text-decoration: none;
+}
+
+/* Responsive per la modal */
+@media (max-width: 600px) {
+    .shopping-list-container {
+        width: 95%;
+        padding: 15px;
+        max-height: 90vh; /* Più altezza su mobile */
+    }
+    .shopping-list-title {
+        font-size: 16px;
+    }
+    .shopping-list-content h3 {
+        font-size: 14px;
+    }
+    .shopping-list {
+        font-size: 12px;
+    }
+    .item-image {
+        width: 30px; /* Aumentato anche qui, ma meno che su desktop */
+        height: 30px;
+    }
+    .item-effect {
+        font-size: 11px;
+        min-width: 75px;
+    }
+    .close-button {
+        width: 24px;
+        height: 24px;
+        font-size: 16px;
+        line-height: 20px;
+        top: 5px;
+        right: 5px;
+    }
+}
+
+/* Stili per la finestra modale */
+.retro-window {
+    display: none; /* Nascosto di default */
+    position: fixed; /* Rimane fisso durante lo scroll */
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centra la finestra */
+    width: 95%; /* Larghezza per mobile */
+    max-width: 700px; /* Larghezza massima per desktop */
+    background-color: #002b16; /* Sfondo verde scuro */
+    color: #e0ffe0; /* Testo verde chiaro */
+    font-family: 'Press Start 2P', monospace, sans-serif;
+    z-index: 1000; /* Assicura che sia sopra gli altri elementi */
+    padding: 10px; /* Spaziatura interna per il bordo */
+    box-shadow: 0 0 15px rgba(0, 255, 204, 0.5); /* Ombra per effetto retro */
+}
+
+.retro-window .retro-border {
+    border: 2px solid #00ffcc; /* Bordo aqua */
+    padding: 20px; /* Spaziatura interna del contenuto */
+    text-align: center;
+    position: relative; /* AGGIUNTO: Necessario per posizionare il close-button relativo a questo bordo */
+}
+
+.retro-window .retro-content h2 {
+    font-size: 20px; /* Dimensione titolo */
+    margin-bottom: 15px;
+    color: #ffffff; /* Titolo bianco */
+}
+
+.retro-window .text-area p {
+    font-size: 14px; /* Dimensione testo corpo */
+    line-height: 1.5; /* Interlinea */
+    margin-bottom: 10px;
+}
+
+.retro-window .highlight {
+    color: #a8ff60; /* Colore highlight lime */
+    font-weight: bold;
+}
+
+.retro-window .retro-button {
+    margin-top: 15px;
+}
+
+/* Commentata per uniformare allo stile base .close-button */
+/*
+.retro-window .close-button {
+    position: absolute;
+    top: 5px;  
+    right: 5px; 
+    background: none;
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    font-family: sans-serif; 
+    font-size: 14px; 
+    font-weight: bold;
+    padding: 0; 
+    width: 20px; 
+    height: 20px; 
+    line-height: 18px; 
+    text-align: center;
+    cursor: pointer;
+    z-index: 10; 
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.retro-window .close-button:hover {
+    background-color: #00ffcc;
+    color: #002b16; 
+}
+*/
+
+/* Media Query per desktop */
+@media (min-width: 768px) {
+    .retro-window .retro-content h2 {
+        font-size: 22px; /* Dimensione titolo desktop */
+    }
+
+    .retro-window .text-area p {
+        font-size: 16px; /* Dimensione testo corpo desktop */
+    }
+}
+
+/* Media Query per schermi molto piccoli */
+@media (max-width: 480px) {
+    .retro-window .text-area p {
+        font-size: 13px; /* Dimensione testo corpo mobile piccolo */
+    }
+}
+
+/* Stili per la schermata di gioco */
+#gameScreen {
+    display: none; /* Mantiene nascosto inizialmente */
+    flex-direction: column; /* Allinea header, canvas, controlli in colonna */
+    align-items: center; /* Centra il canvas orizzontalmente se più stretto */
+    width: 800px; /* Imposta larghezza fissa = larghezza canvas */
+    height: auto; /* Altezza si adatta al contenuto (header + canvas + controlli) */
+    /* Rimuovi eventuali max-width/width: 100% ereditati o specifici */
+    max-width: none;
+    background-color: #000; /* Sfondo nero per coerenza */
+    border: 4px solid #ffffff; /* Bordo come gli altri container */
+    padding: 10px; /* Padding interno */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Effetto glow */
+    position: relative; /* Per posizionamento elementi interni se necessario */
+    box-sizing: border-box; /* Include padding/border nel width */
+}
+
 .game-header {
     display: flex;
     justify-content: space-between;
-    width: 800px;
-    margin-bottom: 10px;
-    padding: 10px;
-    background-color: #444;
-    border-radius: 5px;
-    font-size: 18px;
-}
-
-.score-container, .timer-container {
+    width: 100%; /* Occupa tutta la larghezza di #gameScreen */
     padding: 5px 10px;
+    background-color: rgba(0, 0, 0, 0.5); /* Sfondo semi-trasparente */
+    box-sizing: border-box;
+    color: #fff;
+    font-size: 16px;
+    margin-bottom: 10px; /* Spazio tra header e canvas */
 }
 
-/* Challenge container styling */
+/* Assicura che il canvas non venga stirato */
+#gameCanvas {
+    display: block; /* Rimuove spazio extra sotto il canvas */
+    width: 800px; /* Larghezza esplicita */
+    height: 600px; /* Altezza esplicita */
+    max-width: 100%; /* Impedisce al canvas di superare il contenitore su schermi piccoli */
+    object-fit: contain; /* Mantiene le proporzioni se ridimensionato */
+    image-rendering: pixelated; /* Mantiene l'aspetto pixel art se ridimensionato */
+    image-rendering: crisp-edges; /* Alternativa per alcuni browser */
+    background-color: #111; /* Sfondo di fallback se l'immagine non carica */
+}
+
+.score-container, .timer-container, .challenge-container {
+    /* Stili esistenti o nuovi per questi elementi */
+    flex-basis: 30%; /* Esempio: distribuisce lo spazio */
+    text-align: center;
+}
+
 .challenge-container {
+    flex-basis: 40%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 5px 10px;
 }
 
 .challenge-title {
-    font-size: 14px;
+    font-size: 12px;
     margin-bottom: 5px;
-    color: #ff7700;
 }
 
 .challenge-items {
     display: flex;
-    gap: 8px;
+    gap: 5px;
 }
 
 .challenge-item {
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
-    background-color: #333;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
+    position: relative; /* NECESSARIO per posizionare ::after sul DIV */
+    display: inline-block; /* O flex, assicura che abbia dimensioni */
+    line-height: 0; /* Evita spazi extra sotto l'immagine se inline-block */
 }
 
 .challenge-item img {
-    width: 50px;
-    height: 50px;
+    width: 30px; /* Dimensione icone sfida */
+    height: 30px;
     object-fit: contain;
+    background-color: rgba(255, 255, 255, 0.1); /* Leggero sfondo per visibilità */
+    border: 1px solid #a8ff60;
+    border-radius: 3px;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+    display: block; /* Comportamento prevedibile */
+}
+
+.challenge-item.collected img {
+    filter: grayscale(100%);
+    opacity: 0.5;
 }
 
 .challenge-item.collected::after {
-    content: "✓";
-    position: absolute;
-    bottom: -5px;
-    right: -5px;
-    background-color: #4CAF50;
-    color: white;
-    border-radius: 50%;
-    width: 15px;
-    height: 15px;
-    font-size: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Coin animation styling */
-.coin-animation {
+    content: '✓';
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    z-index: 100;
-    transition: transform 0.5s ease-out;
+    transform: translate(-50%, -50%);
+    color: #a8ff60; /* Colore verde brillante */
+    font-size: 24px; /* Dimensione spunta */
+    font-weight: bold;
+    text-shadow: 1px 1px 2px black;
+    z-index: 1; /* Sopra l'immagine interna */
     pointer-events: none;
+    opacity: 1 !important; /* FORZA OPACITÀ 1 per sicurezza */
 }
 
-.coin-animation.show {
-    transform: translate(-50%, -50%) scale(1);
-}
-
-.coin-animation img {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-    animation: spin 2s infinite linear;
-}
-
-.coin-text {
-    margin-top: 10px;
-    color: #FFD700;
-    font-weight: bold;
-    font-size: 20px;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
-}
-
-@keyframes spin {
-    0% { transform: rotateY(0deg); }
-    100% { transform: rotateY(360deg); }
-}
-
-/* Canvas styling */
-#gameCanvas {
-    background-color: #111;
-    border: 4px solid #555;
-    border-radius: 5px;
-    image-rendering: pixelated; /* For pixel-art style */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
-/* Game screens (start and game over) */
-.game-screen, .game-over {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.8);
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    display: none;
-    min-width: 400px;
-}
-
-.game-screen h2, .game-over h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
-    color: #ff7700;
-}
-
-.game-screen p, .game-over p {
-    margin: 10px 0;
-    font-size: 18px;
-}
-
-/* Result container with medal and feedback */
-.result-container {
+/* Stili per gli item della challenge nel game header */
+#challengeItems {
     display: flex;
+    gap: 5px; /* Spazio tra le immagini */
     align-items: center;
-    justify-content: space-between;
-    margin: 20px 0;
-    gap: 15px;
+    justify-content: center; /* Centra gli item se c'è spazio extra */
+    margin-top: 5px;
 }
 
-.medal-image {
-    width: 100px;
-    height: 100px;
-    object-fit: contain;
-}
-
-.button-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-}
-
-#startButton, #restartButton, #factsButton, #backButton, #scoreChartButton {
-    padding: 10px 20px;
-    font-family: 'Press Start 2P', 'Courier New', monospace;
-    font-size: 16px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-#startButton:hover, #restartButton:hover, #factsButton:hover, #backButton:hover, #scoreChartButton:hover {
-    background-color: #45a049;
-}
-
-#factsButton {
-    background-color: #2196F3;
-}
-
-#factsButton:hover {
-    background-color: #0b7dda;
-}
-
-#backButton {
-    margin-top: 20px;
-}
-
-/* Credits styling */
-.credits-container {
-    margin-top: 25px;
-    padding: 15px;
-    background-color: rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
-    text-align: center;
-    border-top: 2px solid #4CAF50;
-    max-width: 600px;
-}
-
-.credits-text {
-    font-size: 14px;
-    margin: 8px 0;
-    color: #ff7700;
-}
-
-.credits-list {
-    text-align: left;
-    padding-left: 20px;
-    margin: 15px 0 5px 0;
-}
-
-.credits-list li {
-    font-size: 12px;
-    margin-bottom: 6px;
-    color: #ccc;
-    list-style-type: none;
-}
-
-/* Shopping list screen styling */
-.facts-screen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.9);
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    display: none;
-    max-height: 80vh;
-    overflow-y: auto;
-    width: 80%;
-    max-width: 800px;
-}
-
-.facts-container {
-    max-height: 60vh;
-    overflow-y: auto;
-    padding-right: 10px;
-}
-
-/* Shopping list section styling */
-.shopping-list-section {
-    margin-bottom: 30px;
-}
-
-.shopping-list-section .collected-items-header {
-    margin-bottom: 15px;
-    padding: 8px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 5px;
-}
-
-/* Shopping list row styling */
-.shopping-list-row {
-    margin-bottom: 5px;
-    background-color: #000;
-    border-radius: 4px;
-    padding: 2px;
-}
-
-.fact-item {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #444;
-    border-radius: 8px;
-    text-align: left;
-    border-left: 4px solid #4CAF50;
-}
-
-.fact-title {
-    color: #ff7700;
-    margin-bottom: 10px;
-    font-weight: bold;
-    font-size: 18px;
-}
-
-.green-item {
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-.non-green-item {
-    color: #F44336;
-    font-weight: bold;
-}
-
-/* Shopping cart styles */
-.shopping-cart-container {
-    margin: 20px 0;
-    padding: 15px;
-    background-color: #444;
-    border-radius: 8px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.shopping-cart-container h3 {
-    color: #ff7700;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 20px;
-}
-
-.collected-items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.collected-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    border-radius: 4px;
-    background-color: #333;
-}
-
-.collected-item-name {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.collected-item-image {
-    width: 30px;
+#challengeItems img {
+    width: 30px; /* Dimensione base delle icone */
     height: 30px;
     object-fit: contain;
+    background-color: rgba(255, 255, 255, 0.1); /* Leggero sfondo per visibilità */
+    border: 1px solid #a8ff60;
+    border-radius: 3px;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+    position: relative; /* NECESSARIO per posizionare lo pseudo-elemento ::after */
 }
 
-.collected-item-points {
-    font-weight: bold;
+/* Stile per l'item raccolto (grayscale/opacity) */
+#challengeItems .challenge-item.collected img {
+    filter: grayscale(100%);
+    opacity: 0.5;
 }
 
-.collected-item-points.positive {
-    color: #4CAF50;
+/* NUOVA REGOLA: Aggiunge la spunta sull'item raccolto */
+#challengeItems .challenge-item.collected img::after {
+    content: '✓'; /* Il carattere della spunta */
+    position: absolute; /* Posiziona sopra l'immagine */
+    top: 50%; /* Centra verticalmente */
+    left: 50%; /* Centra orizzontalmente */
+    transform: translate(-50%, -50%); /* Corregge il centraggio */
+    color: #a8ff60; /* Colore verde brillante */
+    font-size: 24px; /* Dimensione della spunta */
+    font-weight: bold; /* Grassetto per visibilità */
+    text-shadow: 1px 1px 2px black; /* Ombra per contrasto (opzionale) */
+    z-index: 1; /* Assicura che sia sopra l'immagine */
+    pointer-events: none; /* Non interferisce con i click */
 }
 
-.collected-item-points.negative {
-    color: #F44336;
-}
-
-/* Section headers in collected items list */
-.collected-items-header {
-    font-weight: bold;
-    color: #ff7700;
-    margin-top: 15px;
-    margin-bottom: 8px;
-    padding: 5px;
-    background-color: #444;
-    border-radius: 4px;
-    text-align: center;
-}
-
-/* Game over buttons styling */
-.game-over-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
-}
-
-/* Modal styling */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.modal-content {
-    position: relative;
-    background-color: #333;
-    margin: 15% auto;
-    padding: 20px;
-    border: 2px solid #4CAF50;
-    border-radius: 10px;
-    width: 80%;
-    max-width: 500px;
-    color: white;
-    text-align: center;
-}
-
-.close-button {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close-button:hover,
-.close-button:focus {
-    color: #fff;
-    text-decoration: none;
-}
-
-/* Score chart styling */
-.score-chart-list {
-    margin-top: 20px;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.score-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px;
-    margin: 5px 0;
-    background-color: #444;
-    border-radius: 4px;
-}
-
-.score-value {
-    font-weight: bold;
-    color: #4CAF50;
-}
-
-.score-date {
-    color: #ccc;
-    font-size: 0.9em;
-}
-
-/* Mobile controls with swipe area */
+/* Stili per i controlli mobile */
 .mobile-controls {
-    display: none; /* Hidden by default, shown on mobile */
-    position: relative;
+    display: none; /* Nascosto di default, mostrato da JS su mobile */
     width: 100%;
-    max-width: 800px;
-    margin: 10px auto 0;
-    flex-direction: column;
-    align-items: center;
-    padding: 0 20px;
+    padding: 10px;
     box-sizing: border-box;
-    z-index: 100;
+    margin-top: 10px; /* Spazio dal canvas */
 }
 
 .swipe-area {
     width: 100%;
-    height: 80px;
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid #4CAF50;
-    border-radius: 10px;
-    position: relative;
-    overflow: hidden;
+    height: 80px; /* Altezza area swipe */
+    background-color: rgba(255, 255, 255, 0.1); /* Sfondo leggermente visibile */
+    border: 2px dashed #a8ff60;
+    border-radius: 5px;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #a8ff60;
+    font-size: 14px;
+    user-select: none; /* Impedisce la selezione del testo */
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE/Edge */
+    touch-action: none; /* Disabilita azioni touch predefinite come lo scroll */
 }
 
-.swipe-text {
-    color: white;
-    font-size: 16px;
-    text-align: center;
-    z-index: 2;
-    pointer-events: none;
-    text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
-}
-
-.swipe-area::after {
-    content: '';
+/* Animazione Coin */
+.coin-animation {
     position: absolute;
     top: 50%;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background-color: rgba(76, 175, 80, 0.5);
-    transform: translateY(-50%);
-    z-index: 1;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0); /* Inizia invisibile e piccolo */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
+    z-index: 1100; /* Sopra tutto */
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55), opacity 0.5s ease-out;
+    pointer-events: none; /* Non interagibile quando nascosto/trasparente */
+    max-width: 250px; /* Limita larghezza massima contenitore */
 }
 
-@keyframes pulse {
-    0% { opacity: 0.7; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.05); }
-    100% { opacity: 0.7; transform: scale(1); }
+.coin-animation.show {
+    transform: translate(-50%, -50%) scale(1); /* Diventa visibile e scala alla dimensione normale */
+    opacity: 1;
+    pointer-events: auto; /* Interagibile quando visibile */
 }
 
-/* Media query for mobile devices */
-@media (max-width: 800px) {
-    html, body {
-        /* Prevent any horizontal scrolling */
-        overflow-x: hidden;
-        position: relative;
-        width: 100%;
-        max-width: 100vw;
-        /* Ensure body takes full height of viewport */
-        min-height: 100vh;
-        /* Remove any default margins/padding */
-        margin: 0;
-        padding: 0;
-        /* Prevent overscroll bounce effect */
-        overscroll-behavior: none;
-        /* Match background color with game container */
-        background-color: #111;
-        /* Remove flex display in fullscreen mode */
-        display: block;
-        /* Ensure text is properly sized */
-        text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%;
+.coin-animation img {
+    width: 80px; /* Dimensione moneta */
+    height: 80px;
+    margin-bottom: 10px;
+    animation: spin 1s linear infinite; /* Animazione rotazione */
+    max-width: 100%; /* Sicurezza */
+}
+
+@keyframes spin {
+    from { transform: rotateY(0deg); }
+    to { transform: rotateY(360deg); }
+}
+
+/* Definisci l'animazione */
+@keyframes subtleBobbing {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px); /* Leggero movimento verticale */
+  }
+}
+
+/* Aggiungi media query per rendere #gameScreen responsivo */
+@media (max-width: 840px) { /* Larghezza leggermente maggiore di 800 + padding/border */
+    #gameScreen {
+        width: 100%; /* Occupa tutta la larghezza disponibile */
+        /* height: auto; rimane auto */
     }
-    
-    .game-container {
-        padding: 10px;
-        /* Ensure game container takes full height in fullscreen mode */
-        min-height: 100vh;
-        /* Adjust for iOS safe areas */
-        padding-top: env(safe-area-inset-top);
-        padding-bottom: env(safe-area-inset-bottom);
-        /* Remove border radius and box shadow for full-screen appearance */
-        border-radius: 0;
-        box-shadow: none;
-        /* Ensure it takes full width but doesn't overflow */
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow-x: hidden;
-        /* Match background color with game canvas for seamless appearance */
-        background-color: #111;
-    }
-    
+
+    /* Il canvas si ridimensionerà automaticamente grazie a max-width: 100% e object-fit: contain */
+    /* Potrebbe essere necessario aggiustare la dimensione del font nell'header */
     .game-header {
-        width: 100%;
-        flex-wrap: wrap;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto;
-        gap: 5px;
+        font-size: 14px;
     }
-    
-    .score-container {
-        grid-column: 1;
-        grid-row: 1;
-        font-size: 16px;
-        padding: 5px;
-        background-color: rgba(0, 0, 0, 0.3);
-        border-radius: 4px;
-        text-align: center;
+    .challenge-item img {
+        width: 25px;
+        height: 25px;
     }
-    
-    .timer-container {
-        grid-column: 2;
-        grid-row: 1;
-        font-size: 16px;
-        padding: 5px;
-        background-color: rgba(0, 0, 0, 0.3);
-        border-radius: 4px;
-        text-align: center;
-    }
-    
-    .challenge-container {
-        grid-column: 1 / span 2;
-        grid-row: 2;
-        width: 100%;
-    }
-    
-    #gameCanvas {
-        width: 100%;
-        height: auto;
-        margin-top: 0; /* Removed margin to prevent upward shift */
-        border-radius: 0; /* Remove border radius in fullscreen mode */
-        border: none; /* Remove border in fullscreen mode */
-        display: block; /* Ensure canvas is displayed as block element */
-        max-width: 100%; /* Ensure canvas doesn't overflow container */
-        max-height: 80vh; /* Limit height to prevent overflow */
-    }
-    
-    .mobile-controls {
-        display: flex;
-        position: fixed; /* Fix controls at the bottom of the screen */
-        bottom: 5px; /* Further reduced to bring controls closer to bottom */
-        left: 0;
-        right: 0;
-        padding: 0 20px;
-        padding-bottom: env(safe-area-inset-bottom); /* Respect safe area on iOS */
-        z-index: 200; /* Ensure controls are above other elements */
-    }
-    
-    .game-screen, .game-over, .facts-screen {
-        width: 100%;
-        height: 100vh;
-        padding: 20px;
-        max-height: 100vh; /* Use full height in fullscreen mode */
-        overflow-y: auto; /* Enable vertical scrolling */
-        overflow-x: hidden; /* Prevent horizontal scrolling */
-        border-radius: 0; /* Remove border radius in fullscreen mode */
-        top: 0;
-        left: 0;
-        right: 0;
-        transform: none;
-        padding-top: env(safe-area-inset-top); /* Respect safe area on iOS */
-        padding-bottom: env(safe-area-inset-bottom); /* Respect safe area on iOS */
-        box-sizing: border-box;
-        margin: 0 auto; /* Center horizontally */
-    }
-    
-    /* Adjust facts screen for fullscreen mode */
-    .facts-screen {
-        display: none; /* Changed from block to none to fix initial display issue */
-        width: 100%;
-        height: 100vh;
-        max-width: 100%;
-        max-height: 100vh;
-        overflow-y: auto; /* Enable vertical scrolling */
-        overflow-x: hidden; /* Prevent horizontal scrolling */
-        padding: 20px;
-        box-sizing: border-box;
-        -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-        scroll-padding-bottom: 100px; /* Ensure space at bottom for visibility when scrolling */
-        text-align: center;
-        /* Prevent content from causing horizontal overflow */
-        word-wrap: break-word;
-        word-break: break-word;
-    }
-    
-    /* Adjust facts container for fullscreen mode */
-    .facts-container {
-        width: 100%;
-        padding-right: 0; /* Remove right padding that could cause horizontal scroll */
-        padding-bottom: 20px; /* Space between content and button */
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
-    
-    /* Ensure all content fits within the screen width */
-    .shopping-list-section, .collected-item {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        overflow-x: hidden;
-    }
-    
-    /* Make back button more visible and tappable */
-    #backButton {
-        display: block;
-        margin: 30px auto 20px;
-        width: 80%; /* Make button wider and more tappable */
-        padding: 15px; /* Larger padding for better touch target */
-        font-size: 18px; /* Larger font */
-        margin-bottom: env(safe-area-inset-bottom, 20px); /* Respect safe area on iOS */
-    }
-    
-    /* Adjust game screen content for mobile */
-    #startScreen {
-        padding: 15px;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        left: 0 !important;
-        right: 0 !important;
-        margin: 0 auto !important;
-        transform: none !important;
-        display: block; /* Ensure it's displayed by default */
-    }
-    
-    /* Smaller text for instructions and credits on mobile */
-    #startScreen p {
+}
+
+@media (max-width: 480px) {
+    .game-header {
         font-size: 12px;
-        margin: 8px 0;
-        width: 100%;
-        box-sizing: border-box;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
-        padding: 0 5px;
+        padding: 3px 5px;
     }
-    
-    .credits-container {
-        margin-top: 15px;
-        padding: 10px;
-        max-height: none; /* Remove any height restriction */
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
+    .challenge-item img {
+        width: 20px;
+        height: 20px;
     }
-    
-    .credits-text {
-        font-size: 11px !important;
-        margin: 5px 0;
-        width: 100%;
-        box-sizing: border-box;
+    .score-container, .timer-container {
+        flex-basis: 25%; /* Più spazio per score/timer */
     }
-    
-    .credits-list li {
-        font-size: 10px !important;
-        margin-bottom: 4px;
-        width: 100%;
-        box-sizing: border-box;
-        word-wrap: break-word;
-        overflow-wrap: break-word;
+    .challenge-container {
+        flex-basis: 50%; /* Meno spazio per le icone sfida */
     }
-    
-    /* Adjust game over screen for mobile */
-    .game-over {
-        padding: 15px;
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-        left: 0 !important;
-        right: 0 !important;
-        margin: 0 auto !important;
-        transform: none !important;
+    .swipe-area {
+        height: 60px; /* Riduci altezza area swipe */
+        font-size: 12px;
     }
-    
+    /* Riduci font size in game over e score chart se necessario */
+    .game-over-content h2 { font-size: 20px; }
+    .game-over-content p { font-size: 16px; }
+    #feedback { font-size: 14px; }
+    .shopping-cart-container h3 { font-size: 14px; }
+    .collected-items-list { font-size: 12px; }
+    .collected-item-points { min-width: 80px; font-size: 11px; }
+    .modal-content h3 { font-size: 16px; }
+    .score-item { font-size: 12px; }
+    .score-date { font-size: 10px; }
+
+    /* Game Over specific adjustments for small screens */
     .result-container {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+        gap: 5px;
+        margin-bottom: 15px;
+    }
+    #medalImage {
+        width: 100px;
+        height: 100px;
+    }
+    .wizard-title {
+        font-size: 18px;
+    }
+    .shopping-cart-container {
+        max-height: 25vh; /* Riduci altezza carrello su schermi piccoli */
+        padding: 8px;
+    }
+    #collectedItemsList .collected-item-image {
+        width: 20px;
+        height: 20px;
+    }
+    .game-over-buttons {
         gap: 10px;
     }
-    
-    .shopping-cart-container {
-        width: 100%;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-    
-    .collected-item {
-        flex-wrap: wrap;
-        justify-content: center;
-        text-align: center;
-        gap: 5px;
-    }
-    
-    .collected-item-name {
-        width: 100%;
-        justify-content: center;
-        text-align: center;
-        font-size: 12px;
-    }
-    
-    .collected-item-points {
-        width: 100%;
-        text-align: center;
-        font-size: 12px;
-    }
 }
 
-/* Wizard achievement styles */
-.wizard-title {
-    color: #FFD700; /* Gold color */
-    font-size: 24px;
-    margin: 0 0 10px 0;
-    text-align: center;
-    animation: glow 1.5s infinite alternate;
+/* Stili Game Over */
+#gameOver {
+    display: none; /* Modificato da JS in 'flex' per mostrare */
+    flex-direction: column;
+    align-items: center; /* Centra il box .game-over-content orizzontalmente */
+    justify-content: center; /* Centra il box .game-over-content verticalmente */
+    position: fixed; /* Posiziona rispetto alla viewport */
+    top: 0;
+    left: 0;
+    width: 100%; /* Occupa tutta la larghezza */
+    height: 100%; /* Occupa tutta l'altezza */
+    background-color: rgba(15, 56, 15, 0.85); /* Sfondo overlay semi-trasparente */
+    z-index: 1000; /* Assicurati sia sopra il gioco ma sotto altre modali */
+    padding: 20px; /* Padding per distanziare il box interno dai bordi schermo */
+    box-sizing: border-box;
+    text-align: center; /* Centra il testo all'interno degli elementi figli */
+    font-family: 'Press Start 2P', cursive; /* Assicura font corretto */
+    color: white; /* Assicura colore testo predefinito */
 }
 
-@keyframes glow {
-    from {
-        text-shadow: 0 0 5px #FFD700, 0 0 10px #FFD700;
-    }
-    to {
-        text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
-    }
+/* Il box interno con lo sfondo nero e bordo */
+#gameOver .game-over-content { /* Selettore più specifico se necessario */
+    background-color: #000000; /* Sfondo nero */
+    border: 4px solid #ffffff; /* Bordo bianco */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Ombra */
+    padding: 20px; /* Padding interno del box */
+    width: 90%; /* Larghezza del box rispetto all'overlay */
+    max-width: 600px; /* Larghezza massima */
+    text-align: center; /* Centra testo interno (h2, p) */
+    margin-bottom: 20px; /* Spazio sotto il contenuto, prima dei bottoni */
+    /* Rimuovi eventuali stili ereditati non desiderati se necessario */
 }
 
-.wizard-medal {
-    width: 170px; /* Larger than the standard 100px */
-    height: 170px;
+.game-over-content {
+    width: 100%; /* Assicura che occupi la larghezza per centrare il testo */
+    max-width: 600px; /* Limita larghezza massima */
+    text-align: center; /* Centra testo come h2, p */
+    margin-bottom: 20px; /* Spazio sotto il contenuto principale */
+}
+
+.game-over-content .result-container {
+    margin-bottom: 20px; /* Spazio sotto l'intero blocco risultati */
+    display: flex; /* Usa flex per controllare meglio l'allineamento e lo spazio */
+    flex-direction: column; /* Impila gli elementi verticalmente */
+    align-items: center; /* Centra gli elementi orizzontalmente */
+    gap: 10px; /* AGGIUNTO: Spazio uniforme tra gli elementi figli */
+    text-align: center; /* Assicura che il testo interno sia centrato se necessario */
+}
+
+.game-over-content #feedback {
+    /* margin-bottom: 10px; */ /* Commentato/Rimosso perché usiamo 'gap' */
+    font-size: 1.1em;
+    color: #a8ff60; /* Colore lime per il feedback */
+    font-weight: bold;
+}
+
+.game-over-content .medal-image { 
+    max-width: 100px; /* Aumentato da 80px */
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 15px; 
+    animation: subtleBobbing 1.8s ease-in-out infinite;
+}
+
+#medalImage {
+    width: 60px; /* Larghezza base */
+    height: 60px; /* Altezza base */
     object-fit: contain;
+    margin: 10px auto;
+    transition: width 0.3s ease, height 0.3s ease;
 }
 
-/* Mobile responsive adjustments for wizard */
-@media (max-width: 800px) {
-    .wizard-title {
-        font-size: 20px;
-    }
-    
-    .wizard-medal {
-        width: 135px;
-        height: 135px;
-    }
+#medalImage.wizard-medal {
+    width: 220px;  /* <<< AUMENTATO: Larghezza maggiore */
+    height: 220px; /* <<< AUMENTATO: Altezza maggiore */
+    margin-bottom: 5px;
+}
+
+#gameOver .shopping-cart-container {
+    width: 100%;
+    max-width: 600px; /* Mantieni larghezza massima coerente */
+    margin-bottom: 20px; /* Spazio sotto il carrello */
+    max-height: 30vh; /* Limita altezza carrello */
+    overflow-y: auto;
+    border: 2px solid #a8ff60;
+    padding: 10px;
+    background-color: #0f380f; /* Sfondo verde scuro */
+    box-sizing: border-box;
+    scrollbar-width: thin;
+    scrollbar-color: #a8ff60 #004d00;
+}
+#gameOver .shopping-cart-container::-webkit-scrollbar { width: 8px; }
+#gameOver .shopping-cart-container::-webkit-scrollbar-track { background: #004d00; }
+#gameOver .shopping-cart-container::-webkit-scrollbar-thumb { background-color: #a8ff60; }
+
+#gameOver .shopping-cart-container h3 {
+    color: #a8ff60;
+    font-size: 16px;
+    margin-bottom: 10px;
+    text-align: center;
+    border-bottom: 1px dashed #a8ff60;
+    padding-bottom: 5px;
+}
+
+#gameOver .collected-items-list {
+    font-size: 13px;
+}
+
+#gameOver .collected-item { /* Applica a .collected-item dentro #gameOver */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0px; /* Uniformato a shopping-list-row */
+    border-bottom: 1px dotted rgba(168, 255, 96, 0.3); /* Uniformato */
+    gap: 8px;
+}
+#gameOver .collected-item:last-child { border-bottom: none; }
+
+#gameOver .collected-item-image { /* Applica a .collected-item-image dentro #gameOver */
+    width: 40px; /* Aumentato da 28px */
+    height: 40px; /* Aumentato da 28px */
+    object-fit: contain;
+    flex-shrink: 0;
+    background-color: rgba(255, 255, 255, 0.1); /* Uniformato */
+    border-radius: 3px; /* Uniformato */
+}
+
+#gameOver .collected-item-name { /* Applica a .collected-item-name dentro #gameOver */
+    flex-grow: 1;
+    text-align: left;
+    color: #ffffff; /* Uniformato */
+    display: flex; /* Per allineare immagine e testo */
+    align-items: center;
+}
+
+#gameOver .collected-item-points { /* Applica a .collected-item-points dentro #gameOver */
+    text-align: right;
+    font-size: 12px; /* Uniformato */
+    flex-shrink: 0;
+    min-width: 90px; /* Uniformato */
+    font-weight: bold; /* Uniformato */
+}
+#gameOver .collected-item-points.positive { color: #4CAF50; } /* Mantenuto */
+#gameOver .collected-item-points.negative { color: #F44336; } /* Mantenuto */
+
+/* Centra i pulsanti di Game Over */
+#gameOver .game-over-buttons {
+    display: flex;
+    justify-content: center; /* Centra i pulsanti orizzontalmente */
+    gap: 15px; /* Spazio tra i pulsanti */
+    width: 100%; /* Occupa la larghezza disponibile */
+    max-width: 600px; /* Mantieni larghezza massima coerente */
+    margin-top: 10px; /* Aggiunge un po' di spazio sopra i pulsanti */
+    margin-bottom: 0; /* Rimuovi margine inferiore se presente */
+}
+
+/* Stili per la modale Score Chart (verifica che siano corretti) */
+.modal { /* Riferito a #scoreChartModal */
+    display: nonsee; /* Nascosto di default */
+    position: fixed;
+    z-index: 1001; /* Sopra la schermata game over */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.7); /* Sfondo scuro semi-trasparente */
+    display: flex; /* Usa flexbox per centrare */
+    align-items: center; /* Centra verticalmente il contenuto */
+    justify-content: center; /* Centra orizzontalmente il contenuto */
+}
+
+.modal-content {
+    background-color: #0f380f; /* Sfondo verde scuro */
+    padding: 20px;
+    border: 2px solid #a8ff60; /* Bordo lime */
+    width: 80%;
+    max-width: 500px; /* Larghezza massima del contenuto */
+    color: #fff;
+    position: relative;
+    box-shadow: 0 0 15px #a8ff60;
+    box-sizing: border-box; /* Aggiunto per coerenza */
+}
+
+.score-item {
+    margin-bottom: 20px; /* Aumentato a 20px per più spazio */
+}
+
+/* --- Stili Uniformati per Eco Log Modal --- */
+
+/* Contenitore Modale - Stile basato su #factsScreen */
+#ecoLogModal .modal-content {
+    background-color: #000; /* Sfondo nero come #factsScreen */
+    border: 4px solid #a8ff60; /* Bordo verde retro */
+    padding: 20px;
+    color: #fff;
+    max-width: 550px; /* Larghezza simile a #factsScreen */
+    box-shadow: 0 0 10px #a8ff60;
+    position: relative; /* Per il pulsante di chiusura */
+    display: flex; /* Aggiunto per coerenza se necessario */
+    flex-direction: column; /* Aggiunto per coerenza se necessario */
+    align-items: center; /* Aggiunto per coerenza se necessario */
+}
+
+/* Titolo Modale - Stile basato su #factsScreen h2 */
+#ecoLogModal h3 {
+    font-family: 'Press Start 2P', cursive;
+    color: #a8ff60;
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.6em; /* Come h2 */
+    text-shadow: 2px 2px #000; /* Come h2 */
+}
+
+/* Commentata per uniformare allo stile base .close-button */
+/*
+#ecoLogModal .close-button {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #a8ff60;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 24px; 
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+    text-shadow: 1px 1px #000;
+}
+#ecoLogModal .close-button:hover {
+    color: #fff;
+}
+*/
+
+/* Contenitore Lista Scrollabile - Stile basato su .facts-container */
+.eco-log-list {
+    max-height: 60vh; /* Come .facts-container */
+    overflow-y: auto;
+    padding: 15px; /* Come .facts-container */
+    border: 2px dashed #555; /* Come .facts-container */
+    background-color: rgba(255, 255, 255, 0.05); /* Come .facts-container */
+    margin-top: 15px;
+    margin-bottom: 20px; /* Aggiunto per spazio sotto */
+    width: 90%; /* Come .facts-container */
+    max-width: 500px; /* Come .facts-container */
+    text-align: left; /* Resetta text-align se necessario */
+}
+
+/* Intestazioni Categoria (Fuels, Hazards, etc.) */
+.eco-log-list h4 {
+    font-family: 'Press Start 2P', cursive; /* Font consistente */
+    color: #fff;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #a8ff60;
+    padding-bottom: 5px;
+    font-size: 1.1em; /* Dimensione appropriata */
+}
+.eco-log-list h4:first-of-type {
+    margin-top: 0;
+}
+
+/* Singolo Elemento Lista - Stile basato su elementi in .facts-container */
+.eco-log-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px; /* Spazio tra elementi */
+    padding: 8px 5px; /* Padding leggero */
+    /* background-color: rgba(0, 0, 0, 0.1); */ /* Rimosso/commentato se non presente in facts */
+    border-bottom: 1px solid #444; /* Separatore leggero se presente in facts */
+}
+.eco-log-item:last-child {
+    border-bottom: none; /* Rimuovi bordo per l'ultimo elemento */
+    margin-bottom: 0;
+}
+
+
+/* Immagine Elemento - Stile basato su immagini in .facts-container */
+.eco-log-item-image {
+    width: 50px;  /* <<< DIMENSIONE CORRETTA da .facts-container */
+    height: 50px; /* <<< DIMENSIONE CORRETTA da .facts-container */
+    object-fit: contain;
+    margin-right: 15px; /* Spazio aumentato leggermente */
+    flex-shrink: 0;
+    /* border: 1px solid #555; */ /* Rimosso/commentato se non presente in facts */
+    /* background-color: #333; */ /* Rimosso/commentato se non presente in facts */
+    vertical-align: middle; /* Aiuta con l'allineamento */
+}
+
+/* Dettagli Testuali Elemento - Stile basato su testo in .facts-container */
+.eco-log-item-details {
+    font-family: 'Press Start 2P', monospace; /* O il font usato per i dettagli in facts */
+    font-size: 0.95em; /* Dimensione testo dettagli */
+    color: #fff;
+    line-height: 1.4;
+}
+
+.eco-log-item-details strong {
+    font-family: 'Press Start 2P', cursive; /* Font per il nome oggetto */
+    color: #00ffcc;
+    margin-right: 8px; /* Spazio dopo il nome */
+    font-size: 0.9em; /* Leggermente più piccolo del testo normale */
+    display: block; /* Per spaziatura corretta */
+}
+
+/* Stili Scrollbar - Come .facts-container */
+.eco-log-list::-webkit-scrollbar {
+    width: 8px;
+}
+.eco-log-list::-webkit-scrollbar-track {
+    background: #222; /* Sfondo track */
+    border-radius: 4px;
+}
+.eco-log-list::-webkit-scrollbar-thumb {
+    background-color: #a8ff60; /* Colore thumb */
+    border-radius: 4px;
+    border: 2px solid #222; /* Bordo thumb per contrasto */
+}
+
+/* Stili specifici per la modalità Interstellar */
+
+#interstellarCanvas {
+    display: block; /* Evita spazi extra sotto il canvas */
+    /* Mantieni gli stili inline o spostali qui se preferisci */
+    border: 4px solid #FFFFFF; /* OK */
+    border-radius: 5px; /* OK */
+    background-color: black; /* OK */
+    image-rendering: pixelated; /* OK: Mantiene stile pixel art */
+    image-rendering: crisp-edges; /* OK: Alternativa */
+    margin: 0 auto; /* OK: Centra il canvas se il contenitore è più largo di 800px */
+    /* Assicurati che le dimensioni fisse siano impostate nell'HTML/JS (width="800" height="600") */
+}
+
+/* Stili specifici per l'immagine nella schermata Game Over di Interstellar */
+#interstellarGameOverImage {
+    /* Contenitore per l'immagine (es. explosion, lost, planet) */
+    width: 100%; /* Occupa lo spazio disponibile nel suo contenitore (.game-over-content) */
+    text-align: center; /* Centra l'immagine se è inline-block o block con margin auto */
+    margin-bottom: 20px; /* Spazio sotto l'immagine, come definito in JS */
+}
+
+#interstellarGameOverImage img {
+    /* Regola FONDAMENTALE per limitare la dimensione dell'immagine */
+    display: block; /* Comportamento a blocco per usare margin auto */
+    margin-left: auto;  /* Centra l'immagine orizzontalmente */
+    margin-right: auto; /* Centra l'immagine orizzontalmente */
+    max-width: 150px;  /* Imposta una larghezza massima (REGOLA QUESTO VALORE!) */
+    max-height: 150px; /* Imposta un'altezza massima (REGOLA QUESTO VALORE!) */
+    width: auto;       /* Mantiene le proporzioni originali */
+    height: auto;      /* Mantiene le proporzioni originali */
+    object-fit: contain; /* Assicura che l'immagine si adatti senza distorsioni */
+}
+
+/* Stili specifici per la modale Interstellar per matchare Eco Log */
+#interstellar-window {
+    background-color: #000000; /* Sfondo NERO pieno */
+    border: 4px solid #a8ff60; /* Bordo verde esterno */
+    padding: 20px; /* Aggiungi padding qui per spazio interno */
+    box-shadow: 0 0 10px #a8ff60; /* Manteniamo glow */
+}
+
+/* Sovrascrivi gli stili del riquadro interno .retro-border SOLO dentro #interstellar-window */
+#interstellar-window .retro-border {
+    border: none; /* Rimuovi il bordo interno */
+    padding: 0; /* Rimuovi il padding interno */
+    background-color: transparent; /* Assicura sfondo trasparente */
+    animation: none; /* Rimuovi animazione bordo se presente */
+    box-shadow: none; /* Rimuovi ombre se presenti */
+}
+
+/* Assicura che il contenuto interno non abbia padding/background indesiderati */
+#interstellar-window .retro-content {
+     padding: 0; /* Rimuovi padding se gestito da #interstellar-window */
+     background-color: transparent; /* Assicura sfondo trasparente */
 }

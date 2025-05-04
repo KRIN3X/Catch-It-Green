@@ -1,11 +1,12 @@
 // Game constants
 const GAME_DURATION = 30; // Game duration in seconds
-const CART_SPEED = 20; // Increased from 14 to make cart movement more rapid
-const ITEM_SPEED = 6; // Doubled from 3 to match larger item size
+const CART_SPEED = 1500; // Base cart speed (pixels per second) - Increased from 1200
+const ITEM_SPEED = 360; // Base item speed (pixels per second)
 const SPAWN_RATE = 500; // Reduced from 1000 to make items appear more frequently
 const CART_WIDTH = 160; // Doubled from 80
 const CART_HEIGHT = 100; // Doubled from 50
 const ITEM_SIZE = 100; // Doubled from 50
+const TARGET_FPS = 60; // Target frames per second for delta time normalization
 
 // Sound manager for improved audio handling, especially on mobile
 let soundManager = {
@@ -21,7 +22,7 @@ let soundManager = {
         
         try {
             // Create audio context
-            window.AudioContext = window.AudioContext || window.webkitAudioContext;
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
             this.context = new AudioContext();
             
             // Preload critical sounds
@@ -29,6 +30,8 @@ let soundManager = {
             this.preloadSound('coin.wav');
             this.preloadSound('score.wav');
             this.preloadSound('wizard.wav');
+            this.preloadSound('double.wav'); // Added double.wav
+            this.preloadSound('janitor.wav'); // Added janitor.wav
             
             // Mark as initialized
             this.initialized = true;
@@ -167,6 +170,8 @@ let gameItems = [];
 let cartX = 0;
 let cartY = 0;
 let keysPressed = {};
+let lastFrameTime = 0; // Last frame timestamp for delta time calculation
+let deltaTime = 0; // Time between frames in seconds
 let cartImage; // Image for the player's cart (currently displayed)
 let cartImage1; // Image for the empty cart
 let cartImage2; // Image for the filled cart
@@ -192,6 +197,13 @@ let itemsFast = false; // Track if items are faster
 let itemsFastEndTime = 0; // When the fast effect ends
 let timePlusDelayActive = false; // Track if Time Plus delay is active
 let timePlusDelayUntil = 0; // When Time Plus can start spawning
+let janitorSpawned = false; // Track if Freezing Janitor has been spawned
+let cartSlowed = false; // Flag for Freezing Janitor effect
+let cartSlowedEndTime = 0; // End time for Freezing Janitor effect
+let doubleDoublePointsActive = false; // Flag for Double Double points effect
+let doubleDoublePointsEndTime = 0; // End time for Double Double points effect
+let doubleDoubleSpeedActive = false; // Flag for Double Double speed effect
+let doubleDoubleSpeedEndTime = 0; // End time for Double Double speed effect
 
 // Special items
 const bonusItem = { name: 'Garden Gnome', points: 25, image: 'bonus.png', fastSpeed: true, smokeColor: 'rgba(100, 200, 255, 0.8)' }; // Light blue haze
@@ -199,6 +211,8 @@ const timePlusItem = { name: 'Time Plus', points: '+ 5 seconds', image: '5sec.pn
 const malusItem = { name: 'Pollutant Barrell', points: -20, image: 'malus.png', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 const greenwashingItem = { name: 'Greenwashing', points: -40, image: 'greenwashing.png', sound: 'greenwashing.wav', fastSpeed: true, maxSpawns: 2, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
 const climateChangeItem = { name: 'Climate Change', points: -15, image: 'ny.png', sound: 'ny.wav', fastSpeed: true, smokeColor: 'rgba(255, 100, 100, 0.8)' }; // Light red haze
+const janitorItem = { name: 'Freezing Janitor', points: 0, image: 'janitor.png', sound: 'janitor.wav', fastSpeed: true, isEasterEgg: true };
+const doubleDoubleItem = { name: 'Double Double', image: 'double.png', sound: 'double.wav', points: 'Double points & speed (5s)', isEasterEgg: true };
 
 // Easter Eggs
 const gretaItem = { name: 'Tiny Greta', points: '+10 seconds', image: 'greta.png', sound: 'greta.wav', fastSpeed: true, isEasterEgg: true, addTime: 10 }; // Adds 10 seconds to timer
@@ -353,6 +367,12 @@ window.onload = function() {
     factsScreenElement = document.getElementById('factsScreen');
     backgroundMusic = document.getElementById('backgroundMusic');
     
+    // Make sure the welcome screen is displayed by default
+    document.querySelectorAll('.app-screen').forEach(screen => {
+        screen.style.display = 'none';
+    });
+    startScreenElement.style.display = 'block';
+    
     // Score chart elements
     scoreChartButton = document.getElementById('scoreChartButton');
     scoreChartModal = document.getElementById('scoreChartModal');
@@ -382,10 +402,16 @@ swipeArea.addEventListener('touchmove', function(e) {
     if (touchActive) {
         // Calculate how much the touch has moved
         const newTouchX = e.touches[0].clientX;
-        const deltaX = newTouchX - touchX;
+        const touchDeltaX = newTouchX - touchX;
         
-        // Move the cart by that amount (with significantly increased sensitivity for more responsive movement)
-        cartX += deltaX * 2.5; // Increased from 1.5 to 2.5 for faster response
+        // Calculate a touch sensitivity factor that accounts for delta time
+        // This ensures consistent touch response regardless of frame rate
+        const touchSensitivity = 150; // Base sensitivity factor (doubled to match new speed)
+        
+        // Move the cart by that amount with delta time-aware sensitivity
+        // If deltaTime is 0 (first frame), use a small default value to prevent no movement
+        const effectiveDeltaTime = deltaTime || 0.016; // Default to ~60fps if deltaTime is 0
+        cartX += touchDeltaX * touchSensitivity * effectiveDeltaTime;
         
         // Keep cart within boundaries
         cartX = Math.max(0, Math.min(canvas.width - CART_WIDTH, cartX));
@@ -445,6 +471,12 @@ swipeArea.addEventListener('touchcancel', function(e) {
     itemImages[bearItem.name] = new Image();
     itemImages[bearItem.name].src = `assets/images/${bearItem.image}`;
     
+    itemImages[janitorItem.name] = new Image();
+    itemImages[janitorItem.name].src = `assets/images/${janitorItem.image}`;
+    
+    itemImages[doubleDoubleItem.name] = new Image();
+    itemImages[doubleDoubleItem.name].src = `assets/images/${doubleDoubleItem.image}`;
+    
     // Load positive behavior images
     positiveBehaviors.forEach(behavior => {
         itemImages[behavior.name] = new Image();
@@ -482,14 +514,17 @@ if (isMobileDevice()) {
     // Event listener for restart button
     document.getElementById('restartButton').addEventListener('click', restartGame);
     
-    // Event listener for start button
-    document.getElementById('startButton').addEventListener('click', startGame);
+    // Event listener for start button (REMOVED/COMMENTED as it's handled in index.html now)
+    // document.getElementById('startButton').addEventListener('click', startGame);
     
-    // Event listener for facts button
-    document.getElementById('factsButton').addEventListener('click', showFactsScreen);
+    // Event listener for facts button (REMOVED/COMMENTED as it's handled in index.html now)
+    // document.getElementById('factsButton').addEventListener('click', showFactsScreen);
     
     // Event listener for back button
     document.getElementById('backButton').addEventListener('click', hideFactsScreen);
+    
+    // Event listener for back to menu button in game over screen
+    document.getElementById('backToMenuButton').addEventListener('click', backToMenu);
     
     // Load both cart images
     cartImage1 = new Image();
@@ -541,7 +576,10 @@ function selectChallengeItems() {
     carbonCreditEarned = false;
     
     // Hide coin animation
-    document.getElementById('coinAnimation').classList.remove('show');
+    const coinElement = document.getElementById('coinAnimation');
+    if (coinElement) {
+        coinElement.classList.remove('show');
+    }
     
     // Display challenge items in the UI
     displayChallengeItems();
@@ -608,16 +646,22 @@ function awardCarbonCredit() {
     updateScore();
     
     // Show coin animation
-    const coinAnimation = document.getElementById('coinAnimation');
-    coinAnimation.classList.add('show');
+    showCoinAnimation();
     
     // Play coin sound using sound manager with force play option
     soundManager.playSound('coin.wav', { volume: 1.0, forcePlay: true });
-    
-    // Hide coin animation after 3 seconds
-    setTimeout(() => {
-        coinAnimation.classList.remove('show');
-    }, 3000);
+}
+
+// Function to show and then hide the coin animation
+function showCoinAnimation() {
+    const coinElement = document.getElementById('coinAnimation');
+    if (coinElement) {
+        coinElement.classList.add('show');
+        // Add timeout to hide the animation after 2.5 seconds
+        setTimeout(() => {
+            coinElement.classList.remove('show');
+        }, 2500); // 2500 milliseconds = 2.5 seconds
+    }
 }
 
 // Function to detect if the device is a mobile device
@@ -688,6 +732,9 @@ function handleFullscreenChange() {
     console.log("Fullscreen state changed:", isInFullScreen);
 }
 
+// Variabile per gestire il suono del conto alla rovescia
+let countdownAudio = null;
+
 // Start the game
 function startGame() {
     // Reset game state
@@ -712,6 +759,11 @@ function startGame() {
     itemsSlowedEndTime = 0; // Reset items slowed end time
     doublePoints = false; // Reset double points flag
     doublePointsEndTime = 0; // Reset double points end time
+    janitorSpawned = false;
+    doubleDoublePointsActive = false; // Reset Double Double points flag
+    doubleDoublePointsEndTime = 0; // Reset Double Double points end time
+    doubleDoubleSpeedActive = false; // Reset Double Double speed flag
+    doubleDoubleSpeedEndTime = 0; // Reset Double Double speed end time
     gameRunning = true;
     
     // Ensure sound manager is initialized and handle user interaction
@@ -724,9 +776,11 @@ function startGame() {
     // Select challenge items
     selectChallengeItems();
     
-    // Hide start screen and game over screen
-    startScreenElement.style.display = 'none';
-    gameOverElement.style.display = 'none';
+    // Hide welcome screen and game over screen, show game screen
+    document.querySelectorAll('.app-screen').forEach(screen => {
+        screen.style.display = 'none';
+    });
+    document.getElementById('gameScreen').style.display = 'flex';
     
     // Show mobile controls only on mobile devices
     const mobileControls = document.getElementById('mobileControls');
@@ -800,18 +854,49 @@ function startTimer() {
     }, 1000);
 }
 
+// Update timer display
+function updateTimer() {
+    timerElement.textContent = timeLeft;
+
+    // Cambia immagine del carrello a metà del tempo
+    if (timeLeft === GAME_DURATION / 2) {
+        cartImage = cartImage2;
+    }
+
+    // --- Gestione suono conto alla rovescia (Stop & Restart) ---
+    if (timeLeft <= 4 && timeLeft > 0) {
+        // Se il tempo è <= 4 e il suono NON esiste, crealo e avvialo
+        if (!countdownAudio) {
+            countdownAudio = new Audio('assets/audio/countdown.wav');
+            countdownAudio.loop = true;
+            countdownAudio.play().catch(e => console.log("Errore nella riproduzione del suono del conto alla rovescia:", e));
+        }
+        // Se esiste ma è in pausa (potrebbe succedere se l'utente cambia tab), riprendilo
+        else if (countdownAudio.paused) {
+            countdownAudio.play().catch(e => console.log("Errore nella ripresa del suono del conto alla rovescia:", e));
+        }
+    } else { // Gestisce sia timeLeft > 4 sia timeLeft <= 0 (fine gioco implicita)
+        // Se il tempo è fuori dal range del conto alla rovescia e il suono esiste, fermalo e distruggilo
+        if (countdownAudio) {
+            countdownAudio.pause();
+            countdownAudio.currentTime = 0; // Resetta per sicurezza
+            countdownAudio = null; // Rimuovi il riferimento per forzare la ricreazione la prossima volta
+        }
+    }
+    // --- Fine gestione suono conto alla rovescia ---
+}
+
 // Spawn a new item
 function spawnItem() {
     // Randomize special item spawning throughout the game
     
     // Bonus can spawn anytime during the game with increasing probability
     if (!bonusSpawned) {
-        // Probability increases as game progresses, peaking in the middle
-        const bonusChance = 0.05 + (0.35 * (1 - Math.abs((GAME_DURATION - timeLeft) / GAME_DURATION - 0.5) * 2));
+        // Probability increases as game progresses, peaking in the middle, but lower overall
+        const bonusChance = 0.02 + (0.15 * (1 - Math.abs((GAME_DURATION - timeLeft) / GAME_DURATION - 0.5) * 2));
         if (Math.random() < bonusChance) {
             spawnSpecialItem(bonusItem);
-            bonusSpawned = true;
-            return;
+            bonusSpawned = true; // Mark as spawned
         }
     }
     
@@ -877,6 +962,26 @@ function spawnItem() {
         if (Math.random() < bearChance) {
             spawnSpecialItem(bearItem);
             bearSpawned = true;
+            return;
+        }
+    }
+    
+    // Easter Egg: Freezing Janitor - can spawn anytime with slightly higher probability
+    if (!janitorSpawned) {
+        const janitorChance = 0.01; // 1% chance each spawn cycle (reduced from 10%)
+        if (Math.random() < janitorChance) {
+            spawnSpecialItem(janitorItem);
+            janitorSpawned = true;
+            return;
+        }
+    }
+    
+    // Easter Egg: Double Double - can spawn anytime with low probability, only if not active
+    if (!doubleDoublePointsActive && !doubleDoubleSpeedActive) { // Check if effect is NOT active
+        const doubleDoubleChance = 0.005; // 0.5% chance each spawn cycle (was 0.8%)
+        if (Math.random() < doubleDoubleChance) {
+            spawnSpecialItem(doubleDoubleItem);
+            // No need to set flags here, that happens on collection
             return;
         }
     }
@@ -984,8 +1089,19 @@ function spawnItem() {
 }
 
 // Main game loop
-function gameLoop() {
+function gameLoop(timestamp) {
     if (!gameRunning) return;
+    
+    // Calculate delta time (time since last frame in seconds)
+    if (lastFrameTime === 0) {
+        lastFrameTime = timestamp;
+        deltaTime = 0;
+    } else {
+        deltaTime = (timestamp - lastFrameTime) / 1000; // Convert to seconds
+        // Cap delta time to prevent extreme values during lag spikes
+        deltaTime = Math.min(deltaTime, 0.1);
+        lastFrameTime = timestamp;
+    }
     
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1003,15 +1119,20 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Update cart position based on key presses or touch position
+// Update cart position based on key presses
 function updateCartPosition() {
-    // For keyboard controls
+    let effectiveCartSpeed = CART_SPEED;
+    if (cartSlowed && Date.now() < cartSlowedEndTime) {
+        effectiveCartSpeed = CART_SPEED / 2;
+    } else if (cartSlowed && Date.now() >= cartSlowedEndTime) {
+        cartSlowed = false;
+    }
     if (keysPressed['ArrowLeft'] || keysPressed['a']) {
-        cartX -= CART_SPEED;
+        cartX -= effectiveCartSpeed * deltaTime;
     }
     
     if (keysPressed['ArrowRight'] || keysPressed['d']) {
-        cartX += CART_SPEED;
+        cartX += effectiveCartSpeed * deltaTime;
     }
     
     // Touch controls are now handled directly in the touchmove event
@@ -1031,49 +1152,55 @@ function updateItems() {
         
         // Check for active effects
         const currentTime = Date.now();
+        let currentItemSpeed = ITEM_SPEED;
+
+        // Apply Double Double speed effect if active
+        if (doubleDoubleSpeedActive && currentTime < doubleDoubleSpeedEndTime) {
+            currentItemSpeed *= 2;
+        } else if (doubleDoubleSpeedActive && currentTime >= doubleDoubleSpeedEndTime) {
+            // Deactivate speed effect if time is up
+            doubleDoubleSpeedActive = false;
+        }
         
         // Check if items are slowed down
         if (itemsSlowed && currentTime < itemsSlowedEndTime) {
             // Items move at half speed when slowed
             if (item.fastSpeed) {
-                item.y += ITEM_SPEED; // Normal speed instead of double
+                item.y += currentItemSpeed * deltaTime; // Special items maintain speed even when slowed
             } else {
-                item.y += ITEM_SPEED / 2; // Half speed
+                item.y += (currentItemSpeed / 2) * deltaTime;
             }
         } 
-        // Check if items are sped up
+        // Check if items are sped up by Polar Bear
         else if (itemsFast && currentTime < itemsFastEndTime) {
             // Items move at double speed when fast
             if (item.fastSpeed) {
-                item.y += ITEM_SPEED * 3; // Triple speed for already fast items
+                // Special items move even faster (e.g., 1.5x base * 2 = 3x base)
+                item.y += (currentItemSpeed * 1.5 * 2) * deltaTime; // MODIFICATO: Assicura che la velocità extra sia raddoppiata
             } else {
-                item.y += ITEM_SPEED * 2; // Double speed for normal items
+                // Regular items move at double speed
+                item.y += (currentItemSpeed * 2) * deltaTime; // MODIFICATO: Aggiunto * 2
             }
         }
-        // Normal speed
+        // Normal speed (potentially doubled by Double Double)
         else {
-            // Reset effects if they just ended
-            if (itemsSlowed && currentTime >= itemsSlowedEndTime) {
-                itemsSlowed = false;
-            }
-            if (itemsFast && currentTime >= itemsFastEndTime) {
-                itemsFast = false;
-            }
-            
-            // Move item down with different speeds based on item type
             if (item.fastSpeed) {
-                // Check if this is a bonus or malus item (they move at 2x speed)
-                if ((item.type.name === bonusItem.name || 
-                     item.type.name === malusItem.name || 
-                     item.type.name === greenwashingItem.name || 
-                     item.type.name === climateChangeItem.name)) {
-                    item.y += ITEM_SPEED * 2; // 2x speed for bonus and malus items
-                } else {
-                    item.y += ITEM_SPEED * 1.5; // 1.5x speed for easter eggs
-                }
+                item.y += (currentItemSpeed * 1.5) * deltaTime; // Special items move 1.5x normal speed (or 3x if doubled)
             } else {
-                item.y += ITEM_SPEED; // Normal speed for regular items
+                item.y += currentItemSpeed * deltaTime; // Regular items move at normal speed (or 2x if doubled)
             }
+        }
+
+        // Deactivate slow/fast effects if time is up
+        if (itemsSlowed && currentTime >= itemsSlowedEndTime) {
+            itemsSlowed = false;
+        }
+        if (itemsFast && currentTime >= itemsFastEndTime) {
+            itemsFast = false;
+        }
+        // Deactivate Double Double points effect if time is up
+        if (doubleDoublePointsActive && currentTime >= doubleDoublePointsEndTime) {
+            doubleDoublePointsActive = false;
         }
         
         // Check if item is out of bounds
@@ -1089,79 +1216,71 @@ function updateItems() {
             
             // Handle special effects for Easter Eggs and Time Plus
             if (item.type.isEasterEgg || item.type.name === timePlusItem.name) {
+                // Handle Easter Egg effects
                 if (item.type.name === gretaItem.name) {
-                    // Tiny Greta adds 10 seconds to the timer
-                    timeLeft += item.type.addTime;
-                    // Create special animation for added time
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, `+${item.type.addTime}s`);
-                } else if (item.type.name === timePlusItem.name) {
-                    // Time Plus adds 5 seconds to the timer
-                    timeLeft += item.type.addTime;
-                    // Create special animation for added time with green color
-                    const animation = {
-                        x: item.x + ITEM_SIZE/2,
-                        y: item.y,
-                        points: `+${item.type.addTime}s`,
-                        opacity: 1.0,
-                        createdAt: Date.now(),
-                        isText: true,
-                        duration: 1000,
-                        color: '#4CAF50' // Force green color
-                    };
-                    pointsAnimations.push(animation);
+                    timeLeft += gretaItem.addTime;
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, `+${gretaItem.addTime} seconds`);
+                    soundManager.playSound(gretaItem.sound);
                 } else if (item.type.name === trumpItem.name) {
-                    // Mr Trump sets the score to -20
-                    score = item.type.setScore;
-                    updateScore();
-                    // Create special animation for score reset
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, "Score: -20");
+                    score = trumpItem.setScore;
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, `Score set to ${trumpItem.setScore}`);
+                    soundManager.playSound(trumpItem.sound);
                 } else if (item.type.name === grandmaItem.name) {
-                    // Grandma's Recipes slows all items for 5 seconds
                     itemsSlowed = true;
-                    itemsSlowedEndTime = Date.now() + 5000; // 5 seconds from now
-                    // Create special animation for slowed items with longer duration (3 seconds)
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, "Items Slowed!", 3000);
+                    itemsSlowedEndTime = Date.now() + 5000; // Slow for 5 seconds
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, 'Items slowed!');
+                    soundManager.playSound(grandmaItem.sound);
                 } else if (item.type.name === bearItem.name) {
-                    // Polar Bear makes items faster for 5 seconds
                     itemsFast = true;
-                    itemsFastEndTime = Date.now() + 5000; // 5 seconds from now
-                    // Create special animation for faster items with longer duration (3 seconds)
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, "Items Faster!", 3000);
+                    itemsFastEndTime = Date.now() + 5000; // Fast for 5 seconds
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, 'Items faster!');
+                    soundManager.playSound(bearItem.sound);
+                } else if (item.type.name === janitorItem.name) {
+                    cartSlowed = true;
+                    cartSlowedEndTime = Date.now() + 5000; // Slow cart for 5 seconds
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, 'Cart slowed!');
+                    soundManager.playSound(janitorItem.sound);
+                } else if (item.type.name === doubleDoubleItem.name) {
+                    // Activate Double Double effects
+                    doubleDoublePointsActive = true;
+                    doubleDoublePointsEndTime = Date.now() + 5000; // 5 seconds duration
+                    doubleDoubleSpeedActive = true;
+                    doubleDoubleSpeedEndTime = Date.now() + 5000; // 5 seconds duration
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, 'Double Double!');
+                    soundManager.playSound(doubleDoubleItem.sound);
                 }
+                // Handle Time Plus effect
+                else if (item.type.name === timePlusItem.name) {
+                    timeLeft += timePlusItem.addTime;
+                    createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, `+${timePlusItem.addTime} seconds`);
+                    soundManager.playSound(timePlusItem.sound);
+                }
+                // Add to collected items (still store the base type for these)
+                collectedItems.push(item.type);
             } else {
-                // Regular item - update score normally
-                // Check if double points effect is active
-                const currentTime = Date.now();
-                if (doublePoints && currentTime < doublePointsEndTime) {
-                    // Double the points
-                    const doubledPoints = item.type.points * 2;
-                    score += doubledPoints;
-                    updateScore();
-                    
-                    // Create points animation showing the doubled points
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, doubledPoints);
-                    // Also show a small "x2" indicator
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y - 20, "x2");
-                } else {
-                    // Normal points
-                    if (doublePoints && currentTime >= doublePointsEndTime) {
-                        // Reset the double points effect if it just ended
-                        doublePoints = false;
-                    }
-                    
-                    score += item.type.points;
-                    updateScore();
-                    
-                    // Create points animation at the collision location
-                    createPointsAnimation(item.x + ITEM_SIZE/2, item.y, item.type.points);
+                // Regular item collection
+                let points = item.type.points;
+                let wasDoubled = false;
+                // Apply Double Points effect if active
+                if (doubleDoublePointsActive && Date.now() < doubleDoublePointsEndTime) {
+                    points *= 2;
+                    wasDoubled = true;
                 }
+                score += points;
+                createPointsAnimation(item.x + ITEM_SIZE / 2, item.y, points);
+
+                // Add to collected items with doubled status
+                collectedItems.push({ 
+                    ...item.type, // Copy base item properties
+                    collectedDuringDouble: wasDoubled // Add the flag
+                });
             }
             
-            // Add to collected items
-            collectedItems.push(item.type);
+            // Update score display immediately after any score change
+            updateScore();
             
-            // Check if this item is part of the challenge
-            checkChallengeItem(item.type);
+            // Check if this item is part of the challenge (using the base item name)
+            checkChallengeItem(item.type); // Pass the original item.type for name checking
             
             // Remove item
             gameItems.splice(i, 1);
@@ -1211,7 +1330,7 @@ function updatePointsAnimations() {
             animation.opacity = 1.0 - (age / duration);
             
             // Move animation upward slightly
-            animation.y -= 0.5;
+            animation.y -= 50 * deltaTime;
         }
     }
 }
@@ -1222,51 +1341,49 @@ function checkCollision(item) {
     if (item.counted) {
         return false;
     }
-    
+
     // Ensure the item is moving downward (not upward or static)
-    if (item.y <= item.previousY) {
+    // Allow for slight upward movement due to potential floating point inaccuracies
+    if (item.y < item.previousY - 0.1) {
         return false;
     }
-    
+
     // Get the item boundaries
     const itemLeft = item.x;
     const itemRight = item.x + ITEM_SIZE;
-    const itemBottom = item.y + ITEM_SIZE;
-    const itemCenter = item.x + ITEM_SIZE / 2;
-    
+    // Item vertical range during the last frame
+    const itemPreviousBottom = item.previousY + ITEM_SIZE;
+    const itemCurrentBottom = item.y + ITEM_SIZE;
+
     // Get the cart boundaries
     const cartTop = cartY;
+    const cartBottom = cartY + CART_HEIGHT; // MODIFICATO: Usa l'intera altezza del carrello
     const cartLeft = cartX;
     const cartRight = cartX + CART_WIDTH;
-    const cartCenter = cartX + CART_WIDTH / 2;
-    
-    // Calculate the cart's center area (middle 70% of the cart width)
-    const cartCenterLeft = cartLeft + CART_WIDTH * 0.15;
-    const cartCenterRight = cartRight - CART_WIDTH * 0.15;
-    
-    // Check if the item's bottom is touching the cart's top area
-    // and if the item is horizontally overlapping with the cart's center
-    const isVerticalCollision = (
-        // Vertical collision: item's bottom is touching the top part of the cart
-        itemBottom >= cartTop && 
-        itemBottom <= cartTop + 20 // Only count if touching the top 20 pixels of the cart
+
+    // --- Refined Collision Logic ---
+    // 1. Check standard horizontal overlap (AABB)
+    const isHorizontalOverlap = (
+        itemLeft < cartRight &&
+        itemRight > cartLeft
     );
-    
-    // Check horizontal overlap - item must be centered over the cart
-    const isHorizontalCollision = (
-        // Item's center must be within the cart's center area
-        itemCenter >= cartCenterLeft && 
-        itemCenter <= cartCenterRight
+
+    // 2. Check vertical overlap using previous position against the *entire* cart height
+    const isVerticalOverlap = (
+        itemPreviousBottom <= cartBottom && // Item started at or above the *bottom* of the cart
+        itemCurrentBottom >= cartTop       // Item ended at or below the *top* of the cart
     );
-    
-    // Both vertical and horizontal collision must occur
-    const isColliding = isVerticalCollision && isHorizontalCollision;
-    
+    // --- End of Refined Collision Logic ---
+
+    // Both vertical and horizontal overlap must occur
+    const isColliding = isVerticalOverlap && isHorizontalOverlap;
+
     // Debug collision detection
     if (isColliding) {
-        console.log(`Collision detected! Item at (${itemLeft}-${itemRight}, ${itemBottom}), Cart at (${cartLeft}-${cartRight}, ${cartTop})`);
+        console.log(`Collision detected! Item Y range (${itemPreviousBottom.toFixed(2)} -> ${itemCurrentBottom.toFixed(2)}), Cart Y range (${cartTop}-${cartBottom})`);
+        item.counted = true; // Mark as counted immediately upon detection
     }
-    
+
     return isColliding;
 }
 
@@ -1297,16 +1414,43 @@ function drawGame() {
         ctx.fillRect(cartX + CART_WIDTH - 50, cartY + CART_HEIGHT - 20, 30, 20); // Right wheel (doubled size)
     }
     
-    // Draw items
-    gameItems.forEach(item => {
-        // No special visual effects for special items
+// Draw items
+gameItems.forEach(item => {
+    // Check if the item image is loaded
+    if (itemImages[item.type.name] && itemImages[item.type.name].complete) {
+        // Save the current context state
+        ctx.save();
         
-        // Draw the item image
-        if (itemImages[item.type.name] && itemImages[item.type.name].complete) {
-            // Draw the image
-            ctx.drawImage(itemImages[item.type.name], item.x, item.y, ITEM_SIZE, ITEM_SIZE);
+        // Apply glow effect based on item type
+        if (item.type.isEasterEgg) {
+            // Purple glow for Easter Eggs
+            ctx.shadowColor = 'rgba(156, 39, 176, 0.7)'; // Purple color (#9C27B0)
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
+        } else {
+            // Determine glow color based on whether it's a green item or not
+            if (item.isGreen) {
+                // Green glow for green items
+                ctx.shadowColor = 'rgba(0, 255, 0, 0.7)';
+            } else {
+                // Red glow for non-green items
+                ctx.shadowColor = 'rgba(255, 0, 0, 0.7)';
+            }
+            
+            // Apply shadow blur for the glow effect
+            ctx.shadowBlur = 15;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         }
-    });
+        
+        // Draw the image with glow effect (if applied)
+        ctx.drawImage(itemImages[item.type.name], item.x, item.y, ITEM_SIZE, ITEM_SIZE);
+        
+        // Restore the context to remove the glow effect for the next item
+        ctx.restore();
+    }
+});
     
     // Draw points animations
     drawPointsAnimations();
@@ -1325,7 +1469,7 @@ function drawPointsAnimations() {
             const color = animation.color || (animation.points.includes('+') ? '#4CAF50' : '#F44336'); // Green for positive, red for negative
             
             // Set color with opacity for fade-out effect
-            ctx.fillStyle = `${color}${Math.floor(animation.opacity * 255).toString(16).padStart(2, '0')}`;
+            ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${animation.opacity})`;
             
             // Draw the text message
             ctx.fillText(animation.points, animation.x, animation.y);
@@ -1335,7 +1479,7 @@ function drawPointsAnimations() {
             const color = animation.points >= 0 ? '#4CAF50' : '#F44336'; // Green for positive, red for negative
             
             // Set color with opacity for fade-out effect
-            ctx.fillStyle = `${color}${Math.floor(animation.opacity * 255).toString(16).padStart(2, '0')}`;
+            ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${animation.opacity})`;
             
             // Format points with + or - sign
             const pointsText = animation.points > 0 ? `+${animation.points}` : `${animation.points}`;
@@ -1415,7 +1559,7 @@ function initAudio() {
     
     try {
         // Create audio context
-        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
         audioContext = new AudioContext();
         
         // Load common sounds
@@ -1430,6 +1574,10 @@ function initAudio() {
         loadSound('bear.mp3');
         loadSound('coin.wav');
         loadSound('wizard.wav');
+        loadSound('double.wav'); // Added double.wav
+        loadSound('score.wav');
+        loadSound('countdown.wav');
+        loadSound('5sec.wav');
         
         // Load behavior sounds
         positiveBehaviors.concat(negativeBehaviors).forEach(behavior => {
@@ -1510,6 +1658,8 @@ function playCollectSound(isGreen, item) {
             soundFile = 'bear.mp3';
         } else if (item.type.name === timePlusItem.name) {
             soundFile = '5sec.wav';
+        } else if (item.type.name === doubleDoubleItem.name) {
+            soundFile = 'double.wav';
         }
     } 
     // Check if this is a behavior item
@@ -1526,59 +1676,45 @@ function updateScore() {
     scoreElement.textContent = score;
 }
 
-// Update timer display
-function updateTimer() {
-    timerElement.textContent = timeLeft;
-    
-    // Check if we're at the halfway point (15 seconds) to change the cart image
-    if (timeLeft === GAME_DURATION / 2) {
-        // Switch to the filled cart image (already preloaded)
-        cartImage = cartImage2;
-    }
-    
-    // Play countdown sound 4 seconds before the end
-    if (timeLeft === 4 && !countdownSoundPlayed) {
-        // Use sound manager to play countdown sound with force play option
-        soundManager.playSound('countdown.wav', { volume: 1.0, forcePlay: true });
-        countdownSoundPlayed = true;
-    }
-}
-
 // Show shopping list screen
 function showFactsScreen() {
-    startScreenElement.style.display = 'none';
-    
     // Update the title of the facts screen to "Shopping List"
     const factsTitle = factsScreenElement.querySelector('h2');
     factsTitle.textContent = 'Shopping List';
-    
+
     // Get the facts container
     const factsContainer = factsScreenElement.querySelector('.facts-container');
-    
+
     // Clear existing content
     factsContainer.innerHTML = '';
-    
+
     // Create and display the shopping list
     displayShoppingList(factsContainer);
-    
-    // Show the screen
-    factsScreenElement.style.display = 'block';
-    
+
+    // Hide all screens and show the facts screen
+    // document.querySelectorAll('.app-screen').forEach(screen => {
+    //     screen.style.display = 'none';
+    // });
+    // factsScreenElement.style.display = 'block'; // <<< COMMENTED OUT THIS LINE
+
     // Scroll to top to ensure proper positioning
-    setTimeout(() => {
-        factsScreenElement.scrollTop = 0;
-        
-        // Enter fullscreen mode on mobile devices
-        if (isMobileDevice() && isFullscreenAvailable() && !isInFullScreen) {
-            enterFullscreen();
-        }
-    }, 100);
+    // setTimeout(() => {
+    //     factsScreenElement.scrollTop = 0;
+
+    //     // Enter fullscreen mode on mobile devices
+    //     if (isMobileDevice() && isFullscreenAvailable() && !isInFullScreen) {
+    //         enterFullscreen();
+    //     }
+    // }, 100); // <<< COMMENTED OUT THIS BLOCK
 }
 
-// Hide shopping list screen
+// Hide shopping list screen and return to welcome screen
 function hideFactsScreen() {
-    factsScreenElement.style.display = 'none';
-    startScreenElement.style.display = 'block';
+    // Hide all screens and show the welcome screen
+    // document.querySelectorAll('.app-screen').forEach(screen => {
+    //     screen.style.display = 'none';
+    // });
+    // startScreenElement.style.display = 'block'; // <<< COMMENTED OUT THIS LINE
 }
 
 // Display shopping list with all items and behaviors
@@ -1694,6 +1830,8 @@ function displayShoppingList(container) {
     addItemToShoppingList(easterEggsSection, trumpItem);
     addItemToShoppingList(easterEggsSection, grandmaItem);
     addItemToShoppingList(easterEggsSection, bearItem);
+    addItemToShoppingList(easterEggsSection, janitorItem);
+    addItemToShoppingList(easterEggsSection, doubleDoubleItem);
     
     // Add all sections to the container in the new order
     container.appendChild(goodItemsSection);
@@ -1738,10 +1876,14 @@ function addItemToShoppingList(container, item) {
     
     // Special handling for Easter Eggs
     if (item.isEasterEgg) {
-        // Use purple color for Easter Egg effects
         pointsElement.className = 'collected-item-points';
-        pointsElement.style.color = '#9C27B0'; // Purple color matching the Easter Egg header
-        pointsElement.textContent = item.points;
+        pointsElement.style.color = '#9C27B0';
+        // Add specific text for Freezing Janitor
+        if (item.name === janitorItem.name) {
+            pointsElement.textContent = 'Slow cart for 5 seconds';
+        } else {
+            pointsElement.textContent = item.points; // Keep original text for other Easter Eggs
+        }
     } else if (item.name === 'Time Plus') {
         // Special handling for Time Plus in shopping list
         pointsElement.className = 'collected-item-points positive';
@@ -1755,8 +1897,8 @@ function addItemToShoppingList(container, item) {
     // Add elements to item
     itemElement.appendChild(nameElement);
     itemElement.appendChild(pointsElement);
-    
-    // Add item to row container
+
+    // Aggiungi l'elemento alla riga della lista della spesa
     rowContainer.appendChild(itemElement);
     
     // Add row container to the main container
@@ -1765,13 +1907,9 @@ function addItemToShoppingList(container, item) {
 
 // Display collected items in the shopping cart list
 function displayCollectedItems() {
-    // Get the collected items list element
     const collectedItemsList = document.getElementById('collectedItemsList');
-    
-    // Clear any existing items
     collectedItemsList.innerHTML = '';
-    
-    // If no items were collected, show a message
+
     if (collectedItems.length === 0) {
         const emptyMessage = document.createElement('div');
         emptyMessage.className = 'collected-item';
@@ -1779,49 +1917,40 @@ function displayCollectedItems() {
         collectedItemsList.appendChild(emptyMessage);
         return;
     }
-    
-    // Check if carbon credit was earned
-    let carbonCredit = null;
-    
-    // Group identical items and count them
+
     const itemCounts = {};
     const behaviorCounts = {};
     let carbonCreditItem = null;
-    
+
     collectedItems.forEach(item => {
-        // Check if this is a carbon credit
         if (item.isCarbonCredit) {
             carbonCreditItem = item;
-        }
-        // Check if this is a behavior item
-        else if (item.isBehavior) {
-            if (!behaviorCounts[item.name]) {
-                behaviorCounts[item.name] = {
-                    count: 1,
-                    points: item.points,
-                    image: item.image,
-                    isGreen: item.points > 0,
-                    isBehavior: true
-                };
+        } else if (item.isBehavior) {
+            // Behaviors don't get doubled, group normally
+            const key = item.name;
+            if (!behaviorCounts[key]) {
+                behaviorCounts[key] = { ...item, count: 1 };
             } else {
-                behaviorCounts[item.name].count++;
+                behaviorCounts[key].count++;
             }
         } else {
-            // Regular item
-            if (!itemCounts[item.name]) {
-                itemCounts[item.name] = {
-                    count: 1,
-                    points: item.points,
-                    image: item.image,
-                    isGreen: item.points > 0
-                };
+            // Regular items: group by name AND doubled status
+            // Use collectedDuringDouble flag which is now added when collecting
+            const key = item.name + (item.collectedDuringDouble ? '_doubled' : '_normal');
+            if (!itemCounts[key]) {
+                // Store the item data along with count and doubled status
+                itemCounts[key] = { 
+                    ...item, // Includes base points, image, name, isGreen, and collectedDuringDouble
+                    count: 1, 
+                    wasDoubled: item.collectedDuringDouble // Store the flag explicitly for easier access in addItemToList
+                }; 
             } else {
-                itemCounts[item.name].count++;
+                itemCounts[key].count++;
             }
         }
     });
-    
-    // Add Carbon Credit section if earned
+
+    // Add Carbon Credit section (remains the same)
     if (carbonCreditItem) {
         const carbonCreditHeader = document.createElement('div');
         carbonCreditHeader.className = 'collected-items-header';
@@ -1830,170 +1959,186 @@ function displayCollectedItems() {
         carbonCreditHeader.style.color = '#000';
         collectedItemsList.appendChild(carbonCreditHeader);
         
-        // Create Carbon Credit item
         const carbonCreditElement = document.createElement('div');
         carbonCreditElement.className = 'collected-item';
-        carbonCreditElement.style.backgroundColor = '#FFD70033'; // Gold with transparency
+        carbonCreditElement.style.backgroundColor = '#FFD70033'; 
         carbonCreditElement.style.border = '2px solid #FFD700';
         
-        // Create item name with image
         const nameElement = document.createElement('div');
         nameElement.className = 'collected-item-name';
         
-        // Add item image
         const imageElement = document.createElement('img');
         imageElement.className = 'collected-item-image';
         imageElement.src = `assets/images/${carbonCreditItem.image}`;
         imageElement.alt = carbonCreditItem.name;
-        imageElement.style.width = '40px';
-        imageElement.style.height = '40px';
         nameElement.appendChild(imageElement);
         
-        // Add item name
         const nameText = document.createElement('span');
         nameText.textContent = `${carbonCreditItem.name} (Special Challenge Complete!)`;
         nameText.style.fontWeight = 'bold';
         nameElement.appendChild(nameText);
         
-        // Add points
         const pointsElement = document.createElement('div');
         pointsElement.className = 'collected-item-points positive';
         pointsElement.textContent = `+${carbonCreditItem.points}`;
         pointsElement.style.fontWeight = 'bold';
         
-        // Add elements to item
         carbonCreditElement.appendChild(nameElement);
         carbonCreditElement.appendChild(pointsElement);
-        
-        // Add item to list
         collectedItemsList.appendChild(carbonCreditElement);
     }
-    
-    // Add behaviors section if any behaviors were collected
+
+    // Add behaviors section (remains mostly the same, uses behaviorCounts)
     const positiveBehaviorNames = Object.keys(behaviorCounts).filter(name => behaviorCounts[name].isGreen);
     const negativeBehaviorNames = Object.keys(behaviorCounts).filter(name => !behaviorCounts[name].isGreen);
-    
+
     if (positiveBehaviorNames.length > 0 || negativeBehaviorNames.length > 0) {
-        // Add behaviors header
         const behaviorsHeader = document.createElement('div');
         behaviorsHeader.className = 'collected-items-header';
         behaviorsHeader.textContent = 'Behaviors';
         collectedItemsList.appendChild(behaviorsHeader);
         
-        // Sort positive behaviors by points (highest to lowest)
         positiveBehaviorNames.sort((a, b) => behaviorCounts[b].points - behaviorCounts[a].points);
-        
-        // Add positive behaviors
         positiveBehaviorNames.forEach(behaviorName => {
-            addItemToList(collectedItemsList, behaviorName, behaviorCounts[behaviorName]);
+            // Pass the behavior name and the grouped data
+            addItemToList(collectedItemsList, behaviorName, behaviorCounts[behaviorName]); 
         });
         
-        // Sort negative behaviors by points (lowest to highest)
         negativeBehaviorNames.sort((a, b) => behaviorCounts[a].points - behaviorCounts[b].points);
-        
-        // Add negative behaviors
         negativeBehaviorNames.forEach(behaviorName => {
+             // Pass the behavior name and the grouped data
             addItemToList(collectedItemsList, behaviorName, behaviorCounts[behaviorName]);
         });
     }
-    
-    // Add items section if any items were collected
+
+    // Add items section (uses itemCounts)
     if (Object.keys(itemCounts).length > 0) {
-        // Add items header
         const itemsHeader = document.createElement('div');
         itemsHeader.className = 'collected-items-header';
         itemsHeader.textContent = 'Items';
         collectedItemsList.appendChild(itemsHeader);
         
-        // Sort items by points (highest to lowest)
-        const sortedItems = Object.keys(itemCounts).sort((a, b) => {
-            return itemCounts[b].points - itemCounts[a].points;
+        // Sort items: first by base points (desc), then by name, then put doubled items after normal ones
+        const sortedItemKeys = Object.keys(itemCounts).sort((a, b) => {
+            const itemA = itemCounts[a];
+            const itemB = itemCounts[b];
+            
+            // Primary sort: base points descending
+            if (itemA.points !== itemB.points) {
+                return itemB.points - itemA.points;
+            }
+            // Secondary sort: item name ascending
+            if (itemA.name !== itemB.name) {
+                 return itemA.name.localeCompare(itemB.name);
+            }
+            // Tertiary sort: normal before doubled
+            return itemA.wasDoubled ? 1 : -1; 
         });
         
-        // Add items
-        sortedItems.forEach(itemName => {
-            addItemToList(collectedItemsList, itemName, itemCounts[itemName]);
+        // Add items using the grouped data
+        sortedItemKeys.forEach(itemKey => {
+            // Pass the base item name and the grouped data (which includes 'wasDoubled' flag)
+            addItemToList(collectedItemsList, itemCounts[itemKey].name, itemCounts[itemKey]); 
         });
     }
 }
 
 // Helper function to add an item to the collected items list
+// Now receives the base itemName and the full itemData object from the counts
 function addItemToList(parentElement, itemName, itemData) {
     const itemElement = document.createElement('div');
     itemElement.className = 'collected-item';
-    
-    // Create item name with image
+
     const nameElement = document.createElement('div');
     nameElement.className = 'collected-item-name';
-    
-    // Add item image
+
     const imageElement = document.createElement('img');
     imageElement.className = 'collected-item-image';
     imageElement.src = `assets/images/${itemData.image}`;
     imageElement.alt = itemName;
     nameElement.appendChild(imageElement);
-    
-    // Add item name and count
+
     const nameText = document.createElement('span');
-    nameText.textContent = `${itemName} ${itemData.count > 1 ? `(x${itemData.count})` : ''}`;
+    // Add "(Double)" if the item was collected during the effect (using wasDoubled flag)
+    nameText.textContent = `${itemName} ${itemData.wasDoubled ? '(Double)' : ''} ${itemData.count > 1 ? `(x${itemData.count})` : ''}`;
     nameElement.appendChild(nameText);
-    
-    // Add points
+
     const pointsElement = document.createElement('div');
-    
-    // Check if this is an Easter Egg item
-    if (itemName === 'Tiny Greta' || itemName === 'Mr Trump' || 
-        itemName === 'Grandma\'s Recipes' || itemName === 'Polar Bear') {
-        
-        // Special handling for Easter Eggs
+    const basePoints = itemData.points; // Base points from the item type
+    const pointsAwarded = itemData.wasDoubled ? basePoints * 2 : basePoints; // Points actually awarded per item
+    const totalPoints = pointsAwarded * itemData.count; // Total points for this group
+
+    // Check for Easter Eggs (which are stored directly in collectedItems, not itemCounts/behaviorCounts usually)
+    // This part might need adjustment if Easter eggs were also meant to be doubled (currently they are not)
+    if (itemData.isEasterEgg) { 
         pointsElement.className = 'collected-item-points';
-        pointsElement.style.color = '#9C27B0'; // Purple color for Easter Eggs
-        
-        // Specific text for each Easter Egg
-        if (itemName === 'Tiny Greta') {
-            pointsElement.textContent = '+10 seconds';
-        } else if (itemName === 'Mr Trump') {
-            pointsElement.textContent = 'Sets score at -20';
-        } else if (itemName === 'Grandma\'s Recipes') {
-            pointsElement.textContent = 'Items slower for 5 seconds';
-        } else if (itemName === 'Polar Bear') {
-            pointsElement.textContent = 'Items faster for 5 seconds';
-        }
+        pointsElement.style.color = '#9C27B0';
+        // Display the specific effect text
+        if (itemName === 'Tiny Greta') pointsElement.textContent = '+10 seconds';
+        else if (itemName === 'Mr Trump') pointsElement.textContent = 'Sets score at -20';
+        else if (itemName === 'Grandma\'s Recipes') pointsElement.textContent = 'Items slower for 5 seconds';
+        else if (itemName === 'Polar Bear') pointsElement.textContent = 'Items faster for 5 seconds';
+        else if (itemName === 'Freezing Janitor') pointsElement.textContent = 'Slow the cart for 5 seconds';
+        else if (itemName === 'Double Double') pointsElement.textContent = 'Double points & speed (5s)';
+        else pointsElement.textContent = itemData.points; // Fallback for any other case
     } else if (itemName === 'Time Plus') {
-        // Special handling for Time Plus (now a bonus item)
         pointsElement.className = 'collected-item-points positive';
-        pointsElement.textContent = `+ 5 seconds`;
-    } else {
-        // Regular items
-        pointsElement.className = `collected-item-points ${itemData.isGreen ? 'positive' : 'negative'}`;
-        pointsElement.textContent = `${itemData.points > 0 ? '+' : ''}${itemData.points} × ${itemData.count} = ${itemData.points * itemData.count}`;
+        pointsElement.textContent = `+ 5 seconds`; // Time Plus doesn't have points doubled
+    } else if (itemData.isBehavior) {
+         // Behaviors (points are not doubled)
+        pointsElement.className = `collected-item-points ${basePoints > 0 ? 'positive' : 'negative'}`;
+        pointsElement.textContent = `${basePoints > 0 ? '+' : ''}${basePoints} × ${itemData.count} = ${basePoints * itemData.count}`;
     }
-    
-    // Add elements to item
+     else {
+        // Regular items (handle doubled points display)
+        pointsElement.className = `collected-item-points ${basePoints > 0 ? 'positive' : 'negative'}`;
+        if (itemData.wasDoubled) {
+            pointsElement.style.fontWeight = 'bold'; // Highlight doubled items
+            if (itemData.count > 1) {
+                // Show base points, multiplier, count, and total points
+                pointsElement.textContent = `${basePoints > 0 ? '+' : ''}${basePoints}×2 ×${itemData.count} = ${totalPoints}`;
+            } else {
+                // Show base points, multiplier, and points awarded for a single item
+                pointsElement.textContent = `${basePoints > 0 ? '+' : ''}${basePoints}×2 = ${pointsAwarded}`;
+            }
+        } else {
+            // Show base points, count, and total for the group
+            pointsElement.textContent = `${basePoints > 0 ? '+' : ''}${basePoints} × ${itemData.count} = ${totalPoints}`;
+        }
+    }
+
     itemElement.appendChild(nameElement);
     itemElement.appendChild(pointsElement);
-    
-    // Add item to list
     parentElement.appendChild(itemElement);
 }
 
 // End the game
 function endGame() {
     gameRunning = false;
-    
+
     // Clear intervals
     clearInterval(window.spawnInterval);
     clearInterval(window.timerInterval);
-    
+
     // Stop background music
     backgroundMusic.pause();
     
+    // --- Stop Countdown Sound ---
+    // Check if countdownAudio exists and is playing, then stop and reset it
+    if (countdownAudio && !countdownAudio.ended) {
+        countdownAudio.pause();
+        countdownAudio.currentTime = 0; // Reset the sound
+        countdownAudio = null; // Clear the reference
+        console.log("Countdown sound stopped on game end.");
+    }
+    // --- End Stop Countdown Sound ---
+
     // Hide mobile controls when game ends
     const mobileControls = document.getElementById('mobileControls');
     if (mobileControls) {
         mobileControls.style.display = 'none';
     }
-    
+
     // Play game over sound using sound manager
     // For mobile devices, we need to handle audio differently
     if (isMobileDevice()) {
@@ -2005,27 +2150,27 @@ function endGame() {
         // On desktop, just play the sound directly
         soundManager.playSound('score.wav', { volume: 1.0, forcePlay: true });
     }
-    
+        
     // Update final score
     finalScoreElement.textContent = score;
-    
+
     // Get medal image element
     const medalImage = document.getElementById('medalImage');
-    
+
     // Set feedback message and medal image based on score
     let feedback;
     let medalSrc;
-    
+
     // Remove any existing wizard title from previous games
     const existingWizardTitle = document.querySelector('.wizard-title');
     if (existingWizardTitle) {
         existingWizardTitle.remove();
     }
-    
+
     // Remove wizard medal class if it exists from previous games
     medalImage.classList.remove('wizard-medal');
-    
-    if (score >= 330) {
+
+    if (score >= 350) { // Changed from 330 to 350
         // Create and add the Mysterious Wizard title
         const wizardTitle = document.createElement('h3');
         wizardTitle.textContent = "Mysterious Wizard";
@@ -2058,40 +2203,44 @@ function endGame() {
         feedback = "Oops, your cart is a carbon bomb! Better luck next time!";
         medalSrc = "assets/images/medal_5.png";
     }
-    
+
     // Update feedback text and medal image
     feedbackElement.textContent = feedback;
     medalImage.src = medalSrc;
-    
+
     // Display collected items
     displayCollectedItems();
-    
+
     // Save score to localStorage
     saveScore(score);
-    
-    // Show game over screen
-    gameOverElement.style.display = 'block';
+
+    // Hide game screen and show game over screen
+    document.querySelectorAll('.app-screen').forEach(screen => {
+        screen.style.display = 'none';
+    });
+    // MODIFICATO: Usa 'flex' per attivare gli stili di centratura Flexbox
+    document.getElementById('gameOver').style.display = 'flex'; 
 }
 
 // Save score to localStorage
 function saveScore(score) {
     // Get existing scores from localStorage
     let scores = JSON.parse(localStorage.getItem('catchItGreenScores')) || [];
-    
+
     // Add new score with timestamp
     scores.push({
         score: score,
         date: new Date().toLocaleString()
     });
-    
+
     // Sort scores by highest first
     scores.sort((a, b) => b.score - a.score);
-    
+
     // Keep only top 10 scores
     if (scores.length > 10) {
         scores = scores.slice(0, 10);
     }
-    
+
     // Save back to localStorage
     localStorage.setItem('catchItGreenScores', JSON.stringify(scores));
 }
@@ -2100,10 +2249,10 @@ function saveScore(score) {
 function showScoreChart() {
     // Get scores from localStorage
     const scores = JSON.parse(localStorage.getItem('catchItGreenScores')) || [];
-    
+
     // Clear existing scores
     scoreChartList.innerHTML = '';
-    
+
     // If no scores, show message
     if (scores.length === 0) {
         const emptyMessage = document.createElement('div');
@@ -2135,12 +2284,99 @@ function showScoreChart() {
             scoreChartList.appendChild(scoreItem);
         });
     }
-    
+
     // Show the modal
-    scoreChartModal.style.display = 'block';
+    scoreChartModal.style.display = 'flex'; // <<< MODIFICATO: Usa 'flex' per centrare
 }
 
 // Hide score chart
 function hideScoreChart() {
     scoreChartModal.style.display = 'none';
+}
+
+// Back to menu from game over screen
+function backToMenu() {
+    // Hide all screens and show the welcome screen
+    document.querySelectorAll('.app-screen').forEach(screen => {
+        screen.style.display = 'none';
+    });
+    startScreenElement.style.display = 'block';
+}
+
+// Function to display the game over screen
+function displayGameOver() {
+    console.log("Displaying Game Over Screen");
+    stopTimer(); // Stop the timer
+    gameRunning = false; // Set game state to not running
+
+    // Hide game screen and show game over screen
+    gameScreenElement.style.display = 'none';
+    gameOverScreenElement.style.display = 'flex'; // Use flex for centering
+
+    // Display final score
+    finalScoreElement.textContent = score;
+
+    // Populate the collected items list in the game over screen
+    populateCollectedItemsList();
+
+    // Provide feedback based on score and challenge completion
+    updateFeedbackAndMedal();
+
+    // Save the score
+    saveScore(score);
+
+    // Play game over sound effect
+    playSoundEffect('gameOver'); // Assuming you have a sound effect function
+}
+
+// Function to populate the collected items list in the game over screen
+function populateCollectedItemsList() {
+    const listElement = document.getElementById('collectedItemsList');
+    if (!listElement) {
+        console.error("Element with ID 'collectedItemsList' not found.");
+        return;
+    }
+
+    listElement.innerHTML = ''; // Clear previous list
+
+    // Check if collectedItems is empty or not an object
+    if (!collectedItems || typeof collectedItems !== 'object' || Object.keys(collectedItems).length === 0) {
+        const emptyItem = document.createElement('div');
+        emptyItem.textContent = 'No items collected.';
+        emptyItem.style.textAlign = 'center'; // Center the text
+        emptyItem.style.padding = '10px';
+        listElement.appendChild(emptyItem);
+        return;
+    }
+
+    // Iterate over collected items and display them
+    for (const itemName in collectedItems) {
+        if (Object.hasOwnProperty.call(collectedItems, itemName)) {
+            const item = collectedItems[itemName];
+            if (!item || !item.image) continue; // Skip if item data or image is missing
+
+            const listItem = document.createElement('div');
+            listItem.classList.add('collected-item');
+
+            const img = document.createElement('img');
+            img.src = item.image;
+            img.alt = item.name;
+            img.classList.add('collected-item-image'); // Added this line
+
+            const nameSpan = document.createElement('span');
+            nameSpan.classList.add('collected-item-name');
+            nameSpan.textContent = item.name;
+
+            const pointsSpan = document.createElement('span');
+            pointsSpan.classList.add('collected-item-points');
+            pointsSpan.textContent = `${item.points >= 0 ? '+' : ''}${item.points} pts`;
+            pointsSpan.classList.add(item.points >= 0 ? 'positive' : 'negative');
+
+            listItem.appendChild(img);
+            listItem.appendChild(nameSpan);
+            listItem.appendChild(pointsSpan);
+
+            listElement.appendChild(listItem);
+        }
+    }
 }
