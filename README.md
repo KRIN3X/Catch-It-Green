@@ -32,8 +32,8 @@ Can you complete the shopping list and become an eco-hero? 🌎🛒
 
 ## 🕵️‍♂️ Can you unlock the Mysterious Character?
 
-Only the most sustainable shoppers — those scoring 320 points or more — will catch a glimpse of a secret pixel-art figure hidden deep in the game.
-Think you’ve seen him? Drop his name or a screenshot in the comments below! 👀🌱
+Only the most sustainable shoppers — those scoring 330 points or more — will catch a glimpse of a secret pixel-art figure hidden deep in the game.
+Think you’ve seen him? You have to do better than better! 👀🌱
 
 ---
 
