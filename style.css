@@ -144,6 +144,7 @@ body {
         padding-bottom: 10px; /* Spazio per lo scroll */
         scrollbar-width: thin; /* Stile scrollbar */
         scrollbar-color: #a8ff60 #0f380f;
+        -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
     }
 
     .menu::-webkit-scrollbar {
@@ -275,21 +276,8 @@ h2 { /* Esempio sottotitolo */
     padding-right: 5px; /* Spazio per la scrollbar */
     scrollbar-width: thin;
     scrollbar-color: #a8ff60 #004d00; /* Colori scrollbar */
-}
-
-.shopping-list-content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.shopping-list-content::-webkit-scrollbar-track {
-    background: #004d00; /* Sfondo traccia scrollbar */
-    border-radius: 4px;
-}
-
-.shopping-list-content::-webkit-scrollbar-thumb {
-    background-color: #a8ff60;
-    border-radius: 4px;
-    border: 1px solid #003300;
+    -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
+    -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
 }
 
 .shopping-list-content h3 { /* Titoli sezioni (Green Items, etc.) */
@@ -846,8 +834,8 @@ h2 { /* Esempio sottotitolo */
 }
 
 #medalImage.wizard-medal {
-    width: 220px;  /* <<< AUMENTATO: Larghezza maggiore */
-    height: 220px; /* <<< AUMENTATO: Altezza maggiore */
+    width: 150px;  /* <<< RIDOTTO: Larghezza ridotta */
+    height: 150px; /* <<< RIDOTTO: Altezza ridotta */
     margin-bottom: 5px;
 }
 
@@ -863,6 +851,7 @@ h2 { /* Esempio sottotitolo */
     box-sizing: border-box;
     scrollbar-width: thin;
     scrollbar-color: #a8ff60 #004d00;
+    -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
 }
 #gameOver .shopping-cart-container::-webkit-scrollbar { width: 8px; }
 #gameOver .shopping-cart-container::-webkit-scrollbar-track { background: #004d00; }
@@ -1020,6 +1009,7 @@ h2 { /* Esempio sottotitolo */
     width: 90%; /* Come .facts-container */
     max-width: 500px; /* Come .facts-container */
     text-align: left; /* Resetta text-align se necessario */
+    -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
 }
 
 /* Intestazioni Categoria (Fuels, Hazards, etc.) */
