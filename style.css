@@ -138,37 +138,56 @@ body {
     }
 
     .menu {
-        flex-direction: row; /* Pulsanti in riga su mobile */
-        overflow-x: auto; /* Scroll orizzontale */
-        justify-content: flex-start; /* Allinea a sinistra */
-        padding-bottom: 10px; /* Spazio per lo scroll */
-        scrollbar-width: thin; /* Stile scrollbar */
-        scrollbar-color: #a8ff60 #0f380f;
-        -webkit-overflow-scrolling: touch; /* Aggiunge scorrimento inerziale su iOS */
-    }
-
-    .menu::-webkit-scrollbar {
-        height: 8px;
-    }
-
-    .menu::-webkit-scrollbar-track {
-        background: #0f380f;
-    }
-
-    .menu::-webkit-scrollbar-thumb {
-        background-color: #a8ff60;
-        border-radius: 4px;
-        border: 1px solid #0f380f;
+        flex-direction: column; /* MODIFICATO: Pulsanti in colonna su mobile */
+        align-items: center; /* AGGIUNTO: Centra i pulsanti impilati */
+        overflow-x: initial; /* RIMOSSO: Non serve scroll orizzontale */
+        justify-content: center; /* MODIFICATO: Centra verticalmente (o usa gap) */
+        padding-bottom: 0; /* RIMOSSO: Non serve spazio per scrollbar */
+        scrollbar-width: none; /* Nasconde scrollbar standard */
+        -ms-overflow-style: none; /* Nasconde scrollbar IE/Edge */
     }
 
     .retro-button {
-        flex-shrink: 0; /* Impedisce ai pulsanti di restringersi */
+        flex-shrink: 1; /* MODIFICATO: Permetti restringimento se necessario */
+        width: 80%; /* AGGIUNTO: Imposta una larghezza per i bottoni impilati */
+        max-width: 300px; /* AGGIUNTO: Limita larghezza massima bottone */
+        text-align: center; /* AGGIUNTO: Centra testo nel bottone */
         font-size: 14px; /* Riduci dimensione font su mobile */
         padding: 8px 15px;
     }
 
     .text-area {
         font-size: 12px; /* Riduci dimensione font testo su mobile */
+    }
+
+    body {
+        min-height: 100vh;
+    }
+
+    #gameScreen {
+        max-height: calc(100vh - 100px); /* Regola 100px in base all'altezza effettiva dei controlli + margini */
+        height: auto; /* L'altezza si adatta al contenuto, ma non supera max-height */
+        width: 100%; /* Già presente nella media query @media (max-width: 840px), ma riaffermato qui */
+        display: flex; /* Assicura che sia flex container */
+        flex-direction: column; /* Mantiene l'ordine verticale */
+        justify-content: space-between; /* Spinge i controlli in basso se c'è spazio */
+    }
+
+    #gameCanvas {
+        max-height: calc(100% - 130px); /* Sottrai altezza header e spazio per controlli */
+        width: 100%; /* Riempi lo spazio orizzontale disponibile */
+        height: auto; /* Mantieni le proporzioni */
+    }
+
+    .mobile-controls {
+        width: 100%;
+        flex-shrink: 0; /* Impedisce che si restringa */
+        padding: 10px;
+        box-sizing: border-box;
+    }
+
+    .swipe-area {
+        height: 80px; /* O l'altezza desiderata */
     }
 }
 
@@ -467,6 +486,19 @@ h2 { /* Esempio sottotitolo */
 @media (max-width: 480px) {
     .retro-window .text-area p {
         font-size: 13px; /* Dimensione testo corpo mobile piccolo */
+    }
+
+    #gameScreen {
+        max-height: calc(100vh - 80px); /* Altezza controlli ridotta? */
+    }
+
+    #gameCanvas {
+        max-height: calc(100% - 100px); /* Altezza header + controlli ridotti */
+    }
+
+    .swipe-area {
+        height: 60px; /* Riduci altezza area swipe */
+        font-size: 12px;
     }
 }
 
