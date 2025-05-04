@@ -37,6 +37,16 @@ Think you’ve seen him? You have to do better than better! 👀🌱
 
 ---
 
+## 🪐 Interstellar Mode – New!
+
+Your cart leaves Earth and launches into deep space!
+Collect clean fuel, dodge asteroids, and survive for 90 seconds to reach Planet Zero.
+Watch out for alien tech: gravity shifts, screen blur, secret paths — and something with teeth. 👾
+
+One crash or empty tank… and you’re cosmic compost.
+
+---
+
 ## 📦 Built With
 
 - **Visual Studio Code** (development environment)
