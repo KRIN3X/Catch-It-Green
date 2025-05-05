@@ -1020,13 +1020,13 @@ console.log('Modulo interstellar.js caricato correttamente.');
         // Update game over screen content based on reason
         function updateGameOverContent() {
             console.log("Updating game over content, reason:", gameOverReason, "fuel level:", fuelLevel);
-            
+
             // Use the correct IDs for the Interstellar game over screen elements
             const titleElement = document.getElementById('interstellarGameOverTitle');
             const messageElement = document.getElementById('interstellarGameOverMessage');
             const subMessageElement = document.getElementById('interstellarGameOverSubMessage');
             const imageContainer = document.getElementById('interstellarGameOverImage'); // Corrected ID
-            
+
             // Ensure elements exist before trying to modify them
             if (!titleElement || !messageElement || !subMessageElement || !imageContainer) {
                 console.error("Game Over screen elements not found!");
@@ -1034,40 +1034,57 @@ console.log('Modulo interstellar.js caricato correttamente.');
             }
 
             // Clear previous content
-            imageContainer.innerHTML = ''; 
+            imageContainer.innerHTML = '';
             imageContainer.style.display = 'none'; // Hide image container by default
-            
+
             if (gameOverReason === REASON_TIME_UP && fuelLevel > 0) {
                 // Game won - Reached destination
-                titleElement.textContent = 'Destination Reached!';
-                messageElement.textContent = 'You successfully navigated the cosmos!';
-                subMessageElement.textContent = 'Welcome to Kepler-186f.';
-                imageContainer.style.display = 'block';                imageContainer.appendChild(planetImage.cloneNode());                // Play welcome sound
-                welcomeAudio.play().catch(e => console.error("Error playing welcome sound:", e));
+                titleElement.textContent = 'Destination Reached!'; // Or 'Planet Z-E.R.O. Contact'?
+                // CORRETTO: Messaggio di vittoria Z-E.R.O.
+                messageElement.textContent = 'Planet Z-E.R.O. salutes you. You’ve achieved the impossible — guilt-free groceries.';
+                subMessageElement.textContent = 'In my world, you’d be royalty. In yours… you’re just ahead of your time.';
+                imageContainer.style.display = 'block';
+                // CORRETTO: Immagine di vittoria Z-E.R.O.
+                const img = zeroImage.cloneNode(); // Use the preloaded zeroImage
+                img.alt = "Planet Z-E.R.O."; // Alt text più descrittivo
+                imageContainer.appendChild(img);
+                // Play welcome sound
+                if (welcomeAudio) { // Check if audio element exists
+                    welcomeAudio.currentTime = 0;
+                    welcomeAudio.play().catch(e => console.error("Error playing welcome sound:", e));
+                }
             } else {
                 // Game lost
                 imageContainer.style.display = 'block';
+                let imgToAppend = null;
                 if (gameOverReason === REASON_COLLISION) {
-                    titleElement.textContent = 'Kaboom!'; // New title for collision
-                    messageElement.textContent = 'Your eco-cart is space dust.'; // New message line 1
-                    subMessageElement.textContent = 'Better fuel up and dodge harder next time!'; // New message line 2
-                    imageContainer.appendChild(explosionImage.cloneNode()); // Show explosion image
+                    titleElement.textContent = 'Kaboom!';
+                    messageElement.textContent = 'Your eco-cart is space dust.';
+                    subMessageElement.textContent = 'Better fuel up and dodge harder next time!';
+                    imgToAppend = explosionImage.cloneNode(); // Show explosion image
                 } else if (gameOverReason === REASON_FUEL_DEPLETED) {
-                    titleElement.textContent = 'Fuel Depleted'; // Keep title or change if needed
-                    messageElement.textContent = 'Your cart floats endlessly between stars'; // New message line 1
-                    subMessageElement.textContent = '— a silent tribute to unsustainable logistics.'; // New message line 2
-                    imageContainer.appendChild(lostImage.cloneNode()); // Show lost image
+                    titleElement.textContent = 'Fuel Depleted';
+                    messageElement.textContent = 'Your cart floats endlessly between stars';
+                    subMessageElement.textContent = '— a silent tribute to unsustainable logistics.';
+                    imgToAppend = lostImage.cloneNode(); // Show lost image
                 } else { // Default Game Over (e.g., time up but no fuel)
                     titleElement.textContent = 'Mission Failed';
                     messageElement.textContent = 'You didn\'t reach the destination in time.';
                     subMessageElement.textContent = 'The cosmos waits for no one.';
-                    imageContainer.appendChild(zeroImage.cloneNode()); // Show zero image
+                    // Consider if zeroImage is appropriate here or another default fail image
+                    imgToAppend = lostImage.cloneNode(); // Using lostImage as default fail for now
+                }
+                if (imgToAppend) {
+                    imageContainer.appendChild(imgToAppend);
                 }
                  // Play game over sound for all loss conditions
-                 gameOverSound.play().catch(e => console.error("Error playing game over sound:", e));
+                 if (gameOverSound) { // Check if audio element exists
+                    gameOverSound.currentTime = 0;
+                    gameOverSound.play().catch(e => console.error("Error playing game over sound:", e));
+                 }
             }
         }
-        
+
         // End the interstellar game
         function endInterstellarGame() {
             // Prevent multiple calls if the game is already ended
