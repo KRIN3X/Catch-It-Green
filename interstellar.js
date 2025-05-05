@@ -1133,6 +1133,12 @@ console.log('Modulo interstellar.js caricato correttamente.');
             // Update the game over content based on the reason
             updateGameOverContent();
             
+            // Hide the game screen
+            const interstellarScreen = document.getElementById('interstellarScreen');
+            if (interstellarScreen) {
+                interstellarScreen.style.display = 'none';
+            }
+
             // Show the Game Over screen
             document.getElementById('interstellarGameOver').style.display = 'flex';
             
@@ -1180,6 +1186,12 @@ console.log('Modulo interstellar.js caricato correttamente.');
             
             // Hide the Game Over screen
             document.getElementById('interstellarGameOver').style.display = 'none';
+
+            // Show the game screen
+            const interstellarScreen = document.getElementById('interstellarScreen');
+            if (interstellarScreen) {
+                interstellarScreen.style.display = 'flex';
+            }
 
             // Reset shield visual effect
             canvas.style.boxShadow = 'none';
