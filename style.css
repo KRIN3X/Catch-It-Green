@@ -19,29 +19,30 @@ body {
     max-width: 600px; /* Limita la larghezza su schermi grandi */
     background-color: #000000; /* Finestra nera */
     border: 4px solid #ffffff; /* Bordo iniziale */
-    padding: 20px;
+    padding: 30px; /* AUMENTATO (o aggiusta secondo necessità) per compensare padding rimossi */
     box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Effetto glow */
     position: relative; /* Necessario per il bordo animato */
 }
 
-/* Bordo animato */
+/* Bordo animato - MODIFICATO */
 .retro-border {
-    border: 4px dashed #a8ff60; /* Restored dashed border for consistency */
-    background-color: #0f380f; /* Inner background */
-    padding: 10px; /* Padding inside the border */
-    position: relative; /* Needed for absolute positioning of children like close button */
-    animation: blink-border 1s infinite step-end; /* Restored animation */
+    background-color: transparent; /* MODIFICATO: Rimuove sfondo verde interno */
+    padding: 0; /* RIMOSSO/AZZERATO: Padding interno non più necessario visivamente */
+    position: relative;
 }
 
+/* RIMOSSI Keyframes animazione */
+/*
 @keyframes blink-border {
     50% {
         border-color: #00ffcc;
     }
 }
+*/
 
 .retro-content {
-    background-color: #0f380f; /* Match border background */
-    padding: 20px; /* Padding for content inside */
+    background-color: transparent; /* MODIFICATO: Rimuove sfondo verde contenuto */
+    padding: 0; /* RIMOSSO/AZZERATO: Padding gestito da .retro-container */
     color: #fff;
     text-align: center;
 }
@@ -213,7 +214,7 @@ h2 { /* Esempio sottotitolo */
 
 .shopping-list-container {
     font-family: 'Press Start 2P', monospace;
-    background-color: #003300; /* Verde scuro */
+    background-color: #000000;
     border: 2px solid #00ffcc;
     padding: 20px;
     color: #ffffff; /* Testo chiaro default */
@@ -273,23 +274,25 @@ h2 { /* Esempio sottotitolo */
     overflow-y: auto; /* Scroll verticale se necessario */
     flex-grow: 1; /* Occupa lo spazio rimanente */
     padding-right: 5px; /* Spazio per la scrollbar */
-    scrollbar-width: thin;
-    scrollbar-color: #a8ff60 #004d00; /* Colori scrollbar */
+
+    /* Stili Scrollbar */
+    scrollbar-width: thin; /* Stile scrollbar Firefox */
+    scrollbar-color: #a8ff60 #0f380f; /* Colore thumb e traccia Firefox */
 }
 
 .shopping-list-content::-webkit-scrollbar {
-    width: 8px;
+    width: 8px; /* Larghezza scrollbar */
 }
 
 .shopping-list-content::-webkit-scrollbar-track {
-    background: #004d00; /* Sfondo traccia scrollbar */
+    background: #0f380f; /* Sfondo traccia (verde scuro) */
     border-radius: 4px;
 }
 
 .shopping-list-content::-webkit-scrollbar-thumb {
-    background-color: #a8ff60;
+    background-color: #a8ff60; /* Colore thumb (verde brillante) */
     border-radius: 4px;
-    border: 1px solid #003300;
+    border: 1px solid #0f380f; /* Bordo thumb */
 }
 
 .shopping-list-content h3 { /* Titoli sezioni (Green Items, etc.) */
@@ -398,71 +401,24 @@ h2 { /* Esempio sottotitolo */
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%); /* Centra la finestra */
-    width: 95%; /* Larghezza per mobile */
-    max-width: 700px; /* Larghezza massima per desktop */
-    background-color: #002b16; /* Sfondo verde scuro */
+    width: 90%; /* MODIFICATO: Coerente con .modal-content e .retro-container */
+    max-width: 600px; /* MODIFICATO: Coerente con .modal-content e .retro-container */
+    background-color: #000000; /* Sfondo nero */
+    border: 4px solid #ffffff; /* AGGIUNTO: Bordo bianco esterno come #factsScreen */
     color: #e0ffe0; /* Testo verde chiaro */
     font-family: 'Press Start 2P', monospace, sans-serif;
     z-index: 1000; /* Assicura che sia sopra gli altri elementi */
-    padding: 10px; /* Spaziatura interna per il bordo */
-    box-shadow: 0 0 15px rgba(0, 255, 204, 0.5); /* Ombra per effetto retro */
+    padding: 20px; /* MODIFICATO/AGGIUNTO: Padding tra bordo esterno e contenuto */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Ombra identica a #factsScreen */
+    box-sizing: border-box; /* AGGIUNTO: Per coerenza e gestione del box model */
 }
 
 .retro-window .retro-border {
-    border: 2px solid #00ffcc; /* Bordo aqua */
-    padding: 20px; /* Spaziatura interna del contenuto */
+    padding: 0; /* MODIFICATO: Padding interno ora gestito da .retro-window */
     text-align: center;
-    position: relative; /* AGGIUNTO: Necessario per posizionare il close-button relativo a questo bordo */
+    position: relative; /* Mantenuto per close-button */
+    background-color: transparent; /* Assicura trasparenza */
 }
-
-.retro-window .retro-content h2 {
-    font-size: 20px; /* Dimensione titolo */
-    margin-bottom: 15px;
-    color: #ffffff; /* Titolo bianco */
-}
-
-.retro-window .text-area p {
-    font-size: 14px; /* Dimensione testo corpo */
-    line-height: 1.5; /* Interlinea */
-    margin-bottom: 10px;
-}
-
-.retro-window .highlight {
-    color: #a8ff60; /* Colore highlight lime */
-    font-weight: bold;
-}
-
-.retro-window .retro-button {
-    margin-top: 15px;
-}
-
-/* Commentata per uniformare allo stile base .close-button */
-/*
-.retro-window .close-button {
-    position: absolute;
-    top: 5px;  
-    right: 5px; 
-    background: none;
-    border: 1px solid #00ffcc;
-    color: #00ffcc;
-    font-family: sans-serif; 
-    font-size: 14px; 
-    font-weight: bold;
-    padding: 0; 
-    width: 20px; 
-    height: 20px; 
-    line-height: 18px; 
-    text-align: center;
-    cursor: pointer;
-    z-index: 10; 
-    transition: background-color 0.2s, color 0.2s;
-}
-
-.retro-window .close-button:hover {
-    background-color: #00ffcc;
-    color: #002b16; 
-}
-*/
 
 /* Media Query per desktop */
 @media (min-width: 768px) {
@@ -482,13 +438,13 @@ h2 { /* Esempio sottotitolo */
     }
 }
 
-/* Stili Game Over (Generale - Applica sia a #gameOver che a .game-over-screen) */
+/* Stili Game Over (Generale - Rimuovi !important non necessari) */
 #gameOver,
 .game-over-screen { /* <<-- APPLICA A ENTRAMBI */
     display: none; /* Modificato da JS in 'flex' per mostrare */
-    flex-direction: column !important; /* <<-- ADD !important */
-    align-items: center !important;    /* <<-- ADD !important */
-    justify-content: center !important;/* <<-- ADD !important */
+    flex-direction: column; /* Mantiene l'impilamento verticale di content/buttons */
+    align-items: center;    /* Mantiene centraggio orizzontale */
+    justify-content: center;/* Mantiene centraggio verticale */
     position: fixed;
     top: 0;
     left: 0;
@@ -496,61 +452,68 @@ h2 { /* Esempio sottotitolo */
     height: 100%;
     background-color: rgba(0, 0, 0, 0.85); /* MODIFICATO: Nero semi-trasparente */
     z-index: 1000;
-    padding: 20px;
+    padding: 20px; /* Padding per l'overlay, per distanziare la finestra interna dai bordi */
     box-sizing: border-box;
     text-align: center;
     font-family: 'Press Start 2P', cursive;
     color: white;
 }
 
-/* Box interno (contenuto) */
-#gameOver .game-over-content,
-.game-over-screen .game-over-content { /* <<-- APPLICA A ENTRAMBI */
-    background-color: #000000;
-    border: 4px solid #ffffff;
-    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60;
-    padding: 20px;
-    width: 90%;
-    max-width: 600px;
+/* NUOVA REGOLA GENERALIZZATA per la finestra di contenuto del Game Over */
+/* Questa regola si applicherà a .game-over-content dentro QUALSIASI .game-over-screen */
+.game-over-screen > .game-over-content {
+    background-color: #000000; /* Sfondo nero */
+    border: 4px solid #ffffff; /* Bordo bianco */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Ombra verde stile retro */
+    padding: 20px; /* Padding interno alla finestra, coerente con .retro-window */
+    width: 90%; /* Larghezza della finestra rispetto all'overlay */
+    max-width: 600px; /* Larghezza massima, coerente con .retro-window */
+    text-align: center; /* Centra il testo all'interno della finestra */
+    margin-bottom: 20px; /* Spazio sotto questa finestra e prima di altri elementi (es. bottoni) */
+    box-sizing: border-box; /* Include padding e border nella width/height */
+    color: #e0ffe0; /* Colore testo verde chiaro, opzionale, per coerenza con .retro-window */
+                     /* Se commentato, erediterà 'white' da .game-over-screen */
+}
+
+/* La regola .game-over-content esistente può rimanere per width/max-width se necessario, */
+/* ma background, border, shadow, padding dovrebbero essere gestiti dalla regola più specifica sopra. */
+.game-over-content {
+    width: 100%; /* Occupa la larghezza del suo contenitore (la finestra stilizzata) */
+    /* max-width: 600px;  Questa è già definita nella regola .game-over-screen > .game-over-content */
     text-align: center;
-    margin-bottom: 20px; /* Spazio sotto il contenuto, prima dei bottoni */
+    /* margin-bottom: 10px; Questa è già definita e potenzialmente sovrascritta dalla regola più specifica */
 }
 
 /* Contenitore Bottoni */
 #gameOver .game-over-buttons,
 .game-over-screen .game-over-buttons { /* <<-- APPLICA A ENTRAMBI */
     display: flex;
-    flex-direction: column !important; /* <<-- ADD !important */
-    align-items: center !important;    /* <<-- ADD !important */
-    justify-content: center;
+    flex-direction: row; /* MODIFICATO: Bottoni in riga di default */
+    align-items: center; /* Centra verticalmente i bottoni */
+    justify-content: center; /* Centra i bottoni orizzontalmente */
     gap: 15px;
     width: 100%;
-    max-width: 300px; /* Larghezza per bottoni impilati */
-    /* margin-top: 10px; Rimosso, gestito da margin-bottom su .game-over-content */
+    max-width: 600px; /* MODIFICATO: Larghezza adatta per bottoni in riga */
+    margin-top: 20px; /* AGGIUNTO/RIPRISTINATO: Spazio sopra i bottoni */
     margin-bottom: 0;
-}
-
-/* Bottoni - Regole responsive */
-@media (min-width: 480px) {
-    #gameOver .game-over-buttons,
-    .game-over-screen .game-over-buttons { /* <<-- APPLICA A ENTRAMBI */
-        flex-direction: row; /* Bottoni in riga su schermi più larghi */
-        max-width: 600px; /* Larghezza maggiore per bottoni in riga */
-    }
 }
 
 /* Stile singolo bottone dentro il contenitore */
 #gameOver .game-over-buttons .retro-button,
 .game-over-screen .game-over-buttons .retro-button { /* <<-- APPLICA A ENTRAMBI */
-    width: 100%; /* Occupa tutta la larghezza del contenitore quando impilato */
+    width: auto; /* MODIFICATO: Larghezza automatica di default */
     margin: 0;
     box-sizing: border-box;
+    flex-shrink: 0; /* Impedisce ai bottoni di restringersi troppo */
 }
 
-@media (min-width: 480px) {
-    #gameOver .game-over-buttons .retro-button,
-    .game-over-screen .game-over-buttons .retro-button { /* <<-- APPLICA A ENTRAMBI */
-        width: auto; /* Larghezza automatica quando in riga */
+/* Opzionale: Gestione wrap su schermi piccoli */
+@media (max-width: 400px) { /* Aggiusta breakpoint se necessario */
+    #gameOver .game-over-buttons,
+    .game-over-screen .game-over-buttons {
+        flex-wrap: wrap; /* Permette ai bottoni di andare a capo */
+        max-width: 300px; /* Riduci larghezza massima se vanno a capo */
+        gap: 10px; /* Riduci gap se vanno a capo */
     }
 }
 
@@ -828,10 +791,10 @@ h2 { /* Esempio sottotitolo */
         height: 100px;
     }
     .wizard-title {
-        font-size: 18px;
+        font-size: 16px;
     }
     .shopping-cart-container {
-        max-height: 25vh; /* Riduci altezza carrello su schermi piccoli */
+        max-height: 35vh; /* Aumentato leggermente */
         padding: 8px;
     }
     #collectedItemsList .collected-item-image {
@@ -868,11 +831,11 @@ h2 { /* Esempio sottotitolo */
     background-color: #000000; /* Sfondo nero */
     border: 4px solid #ffffff; /* Bordo bianco */
     box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Ombra */
-    padding: 20px; /* Padding interno del box */
+    padding: 15px; /* RIDOTTO: Padding interno */
     width: 90%; /* Larghezza del box rispetto all'overlay */
     max-width: 600px; /* Larghezza massima */
     text-align: center; /* Centra testo interno (h2, p) */
-    margin-bottom: 20px; /* Spazio sotto il contenuto, prima dei bottoni */
+    margin-bottom: 10px; /* RIDOTTO: Spazio sotto il contenuto, prima dei bottoni */
     /* Rimuovi eventuali stili ereditati non desiderati se necessario */
 }
 
@@ -880,7 +843,7 @@ h2 { /* Esempio sottotitolo */
     width: 100%; /* Assicura che occupi la larghezza per centrare il testo */
     max-width: 600px; /* Limita larghezza massima */
     text-align: center; /* Centra testo come h2, p */
-    margin-bottom: 20px; /* Spazio sotto il contenuto principale */
+    margin-bottom: 10px; /* RIDOTTO: Spazio sotto il contenuto principale */
 }
 
 .game-over-content .result-container {
@@ -910,24 +873,37 @@ h2 { /* Esempio sottotitolo */
 }
 
 #medalImage {
-    width: 60px; /* Larghezza base */
-    height: 60px; /* Altezza base */
+    display: block;
+    margin: 5px auto 5px auto; /* RIDOTTO Margine sopra/sotto per compensare */
+    max-width: 120px; /* AUMENTATO: Dimensione massima medaglia */
+    max-height: 120px; /* AUMENTATO: Dimensione massima medaglia */
     object-fit: contain;
-    margin: 10px auto;
     transition: width 0.3s ease, height 0.3s ease;
 }
 
+/* Stile specifico per l'immagine del mago */
 #medalImage.wizard-medal {
-    width: 220px;  /* <<< AUMENTATO: Larghezza maggiore */
-    height: 220px; /* <<< AUMENTATO: Altezza maggiore */
-    margin-bottom: 5px;
+    width: 140px;  /* AUMENTATO: Dimensione mago */
+    height: 140px; /* AUMENTATO: Dimensione mago */
+    margin-bottom: 0px; /* Mantenuto basso */
+    /* margin-top: 5px; (gestito da margin in #medalImage) */
+}
+
+.wizard-title {
+    display: block; /* Assicura che sia visibile quando la classe è aggiunta */
+    color: #ffeb3b; /* Colore oro */
+    font-size: 16px; /* RIDOTTO: Dimensione font */
+    margin-top: 5px; /* Piccolo spazio sopra */
+    margin-bottom: 5px; /* RIDOTTO: Margine sotto */
+    font-weight: bold;
+    text-shadow: 1px 1px #000;
 }
 
 #gameOver .shopping-cart-container {
     width: 100%;
     max-width: 600px; /* Mantieni larghezza massima coerente */
     margin-bottom: 20px; /* Spazio sotto il carrello */
-    max-height: 30vh; /* Limita altezza carrello */
+    max-height: 35vh; /* AUMENTATO LEGGERMENTE: Dà più spazio alla lista */
     overflow-y: auto;
     border: 2px solid #a8ff60;
     padding: 10px;
@@ -993,40 +969,19 @@ h2 { /* Esempio sottotitolo */
 /* Centra i pulsanti di Game Over */
 #gameOver .game-over-buttons {
     display: flex;
-    flex-direction: column; /* AGGIUNTO: Impila i bottoni verticalmente */
-    align-items: center; /* AGGIUNTO: Centra i bottoni impilati */
-    justify-content: center; /* Mantenuto (utile se flex-direction cambia con media query) */
+    flex-direction: row; /* Bottoni in riga di default */
+    align-items: center; /* Centra i bottoni impilati */
+    justify-content: center; /* Centra i bottoni orizzontalmente */
     gap: 15px; /* Spazio tra i pulsanti */
     width: 100%; /* Occupa la larghezza disponibile */
-    max-width: 300px; /* RIDOTTO: Larghezza massima per i bottoni impilati */
-    margin-top: 10px; /* Aggiunge un po' di spazio sopra i pulsanti */
+    max-width: 600px; /* Larghezza massima per i bottoni in riga */
+    margin-top: 20px; /* Aggiunge un po' di spazio sopra i pulsanti */
     margin-bottom: 0; /* Rimuovi margine inferiore se presente */
 }
 
-/* Opzionale: Se vuoi i bottoni affiancati su schermi più grandi */
-@media (min-width: 480px) {
-    #gameOver .game-over-buttons {
-        flex-direction: row; /* Bottoni in riga su schermi più larghi */
-        max-width: 600px; /* Ripristina larghezza massima */
-    }
-}
-
-/* Assicurati che .retro-button funzioni bene in questo contesto */
-#gameOver .game-over-buttons .retro-button {
-    width: 100%; /* Fai sì che i bottoni prendano la larghezza del container quando impilati */
-    margin: 0; /* Rimuovi margini extra se presenti */
-    box-sizing: border-box; /* Include padding/border nella larghezza */
-}
-
-@media (min-width: 480px) {
-    #gameOver .game-over-buttons .retro-button {
-        width: auto; /* Lascia che i bottoni si adattino al contenuto su schermi larghi */
-    }
-}
-
 /* Stili per la modale Score Chart (verifica che siano corretti) */
-.modal { /* Riferito a #scoreChartModal */
-    display: nonsee; /* Nascosto di default */
+.modal { /* Riferito a #scoreChartModal, #ecoLogModal, #shoppingListModal etc. */
+    display: none; /* Nascosto di default */
     position: fixed;
     z-index: 1001; /* Sopra la schermata game over */
     left: 0;
@@ -1040,15 +995,21 @@ h2 { /* Esempio sottotitolo */
     justify-content: center; /* Centra orizzontalmente il contenuto */
 }
 
+/* NUOVA REGOLA GENERICA PER TUTTI I CONTENUTI MODALI */
 .modal-content {
-    background-color: #0f380f; /* Sfondo verde scuro */
+    background-color: #000000; /* Sfondo nero per tutti i contenuti modali */
     padding: 20px;
-    border: 2px solid #a8ff60; /* Bordo lime */
-    width: 80%;
-    max-width: 500px; /* Larghezza massima del contenuto */
-    color: #fff;
-    position: relative;
-    box-shadow: 0 0 15px #a8ff60;
+    border: 4px solid #ffffff; /* Bordo bianco come le altre finestre */
+    color: #e0ffe0; /* Testo verde chiaro default */
+    font-family: 'Press Start 2P', monospace, sans-serif;
+    position: relative; /* Per posizionamento close-button */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Ombra come le altre */
+    max-width: 600px; /* Larghezza massima comune */
+    width: 90%; /* Larghezza comune */
+    text-align: center; /* Centra testo di default */
+    display: flex; /* Usa flexbox per layout interno */
+    flex-direction: column; /* Impila elementi verticalmente */
+    align-items: center; /* Centra elementi orizzontalmente */
     box-sizing: border-box; /* Aggiunto per coerenza */
 }
 
@@ -1056,52 +1017,22 @@ h2 { /* Esempio sottotitolo */
     margin-bottom: 20px; /* Aumentato a 20px per più spazio */
 }
 
+/* Regola più generica per forzare lo sfondo dei titoli */
+#factsScreen h2, /* Titolo originale in #factsScreen */
+#factsScreen h3, /* Possibile titolo h3 in #factsScreen */
+#ecoLogModal h3, /* Titolo in #ecoLogModal */
+.modal-content h2, /* Qualsiasi h2 in una modale generica */
+.modal-content h3  /* Qualsiasi h3 in una modale generica */
+{
+    background-color: transparent !important; /* Forza sfondo TRASPARENTE */
+    color: #a8ff60;
+    margin-bottom: 15px;
+    /* Rimuovi padding se aggiunto prima */
+    /* padding-left: 10px; */
+    /* padding-right: 10px; */
+}
+
 /* --- Stili Uniformati per Eco Log Modal --- */
-
-/* Contenitore Modale - Stile basato su #factsScreen */
-#ecoLogModal .modal-content {
-    background-color: #000; /* Sfondo nero come #factsScreen */
-    border: 4px solid #a8ff60; /* Bordo verde retro */
-    padding: 20px;
-    color: #fff;
-    max-width: 550px; /* Larghezza simile a #factsScreen */
-    box-shadow: 0 0 10px #a8ff60;
-    position: relative; /* Per il pulsante di chiusura */
-    display: flex; /* Aggiunto per coerenza se necessario */
-    flex-direction: column; /* Aggiunto per coerenza se necessario */
-    align-items: center; /* Aggiunto per coerenza se necessario */
-}
-
-/* Titolo Modale - Stile basato su #factsScreen h2 */
-#ecoLogModal h3 {
-    font-family: 'Press Start 2P', cursive;
-    color: #a8ff60;
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.6em; /* Come h2 */
-    text-shadow: 2px 2px #000; /* Come h2 */
-}
-
-/* Commentata per uniformare allo stile base .close-button */
-/*
-#ecoLogModal .close-button {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: #a8ff60;
-    font-family: 'Press Start 2P', cursive;
-    font-size: 24px; 
-    cursor: pointer;
-    padding: 5px;
-    line-height: 1;
-    text-shadow: 1px 1px #000;
-}
-#ecoLogModal .close-button:hover {
-    color: #fff;
-}
-*/
 
 /* Contenitore Lista Scrollabile - Stile basato su .facts-container */
 .eco-log-list {
@@ -1188,6 +1119,76 @@ h2 { /* Esempio sottotitolo */
     border: 2px solid #222; /* Bordo thumb per contrasto */
 }
 
+/* Stili scrollbar per Firefox */
+.facts-container { /* Corretto il selettore */
+    scrollbar-width: thin; /* Rende la scrollbar più sottile */
+    scrollbar-color: #a8ff60 #0f380f; /* Colore thumb e track */
+}
+
+/* AGGIUNTO: Stili espliciti per figli diretti */
+.facts-container {
+    max-height: 300px; /* Altezza massima prima dello scroll */
+    overflow-y: auto; /* Scroll verticale se il contenuto eccede */
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente scuro */
+    border-radius: 5px;
+    margin-top: 10px; /* Spazio dal titolo della modale */
+}
+
+.facts-container > h3 {
+    background-color: transparent !important;
+    color: #a8ff60;
+    font-size: 1.1em;
+    text-align: left;
+
+    border-top: 1px dashed #a8ff60;    /* Linea sopra per tutti */
+    border-bottom: 1px dashed #a8ff60; /* Linea sotto per tutti */
+
+    padding-top: 10px;    /* Spazio tra linea sopra e testo */
+    padding-bottom: 10px; /* Spazio tra testo e linea sotto */
+
+    margin-top: 20px;     /* Spazio sopra la linea superiore */
+    margin-bottom: 10px;  /* Spazio sotto la linea inferiore */
+}
+
+.facts-container > h3:first-of-type {
+    margin-top: 10px; 
+}
+
+.facts-container > hr {
+    border: none; /* Rimuovi bordo di default */
+    display: none; /* Nasconde eventuali <hr> dato che le linee sono gestite dagli h3 */
+}
+
+/* Opzionale: Assicura che gli item interni non abbiano sfondi strani */
+.fact-item { /* Assumendo che gli item abbiano questa classe, altrimenti adattare */
+    background-color: transparent !important; /* AGGIUNTO !important */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 5px; /* Aggiunto padding */
+    border-bottom: 1px dotted rgba(168, 255, 96, 0.3); /* Separatore leggero */
+}
+.fact-item:last-of-type { /* Rimuovi bordo dall'ultimo item di ogni sezione */
+     border-bottom: none;
+}
+
+/* Stili scrollbar Webkit per .facts-container */
+.facts-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.facts-container::-webkit-scrollbar-track {
+    background: #222; /* Track DARK GRAY (#222) - RIMOSSO !important */
+    border-radius: 4px;
+}
+
+.facts-container::-webkit-scrollbar-thumb {
+    background-color: #a8ff60; /* Thumb LIME */
+    border-radius: 4px;
+    border: 2px solid #222; /* Bordo DARK GRAY (#222) */
+}
+
 /* Stili specifici per la modalità Interstellar */
 
 #interstellarCanvas {
@@ -1220,6 +1221,7 @@ h2 { /* Esempio sottotitolo */
     width: auto;       /* Mantiene le proporzioni originali */
     height: auto;      /* Mantiene le proporzioni originali */
     object-fit: contain; /* Assicura che l'immagine si adatti senza distorsioni */
+    animation: subtleBobbing 1.8s ease-in-out infinite; /* AGGIUNTA ANIMAZIONE */
 }
 
 /* Stili specifici per la modale Interstellar per matchare Eco Log */
@@ -1243,4 +1245,84 @@ h2 { /* Esempio sottotitolo */
 #interstellar-window .retro-content {
      padding: 0; /* Rimuovi padding se gestito da #interstellar-window */
      background-color: transparent; /* Assicura sfondo trasparente */
+}
+
+/* Stili per la schermata Facts */
+#factsScreen {
+    display: none; /* Mantiene nascosto inizialmente */
+    background-color: #000000 !important; /* IMPOSTA SFONDO NERO */
+    width: 90%;
+    max-width: 600px; /* Coerente con retro-container */
+    border: 4px solid #ffffff; /* Coerente con retro-container */
+    padding: 20px; /* Padding interno */
+    box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Coerente con retro-container */
+    position: relative; /* O static, a seconda del layout */
+    margin: 20px auto; /* Centra e aggiunge margine */
+    box-sizing: border-box;
+    text-align: center; /* Centra il contenuto */
+    flex-direction: column; /* Assicura allineamento verticale se display:flex */
+    align-items: center; /* Centra elementi figli */
+}
+
+.facts-container {
+    max-height: 300px; /* Altezza massima prima dello scroll */
+    overflow-y: auto; /* Scroll verticale se il contenuto eccede */
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7); /* Sfondo semi-trasparente scuro */
+    border-radius: 5px;
+    margin-top: 10px; /* Spazio dal titolo della modale */
+}
+
+.facts-container > h3 {
+    background-color: transparent !important;
+    color: #a8ff60;
+    font-size: 1.1em;
+    text-align: left;
+
+    border-top: 1px dashed #a8ff60;    /* Linea sopra per tutti */
+    border-bottom: 1px dashed #a8ff60; /* Linea sotto per tutti */
+
+    padding-top: 10px;    /* Spazio tra linea sopra e testo */
+    padding-bottom: 10px; /* Spazio tra testo e linea sotto */
+
+    margin-top: 20px;     /* Spazio sopra la linea superiore */
+    margin-bottom: 10px;  /* Spazio sotto la linea inferiore */
+}
+
+.facts-container > h3:first-of-type {
+    margin-top: 10px; 
+}
+
+.facts-container > hr {
+    border: none; /* Rimuovi bordo di default */
+    display: none; /* Nasconde eventuali <hr> dato che le linee sono gestite dagli h3 */
+}
+
+/* Opzionale: Assicura che gli item interni non abbiano sfondi strani */
+.fact-item { /* Assumendo che gli item abbiano questa classe, altrimenti adattare */
+    background-color: transparent !important; /* AGGIUNTO !important */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 5px; /* Aggiunto padding */
+    border-bottom: 1px dotted rgba(168, 255, 96, 0.3); /* Separatore leggero */
+}
+.fact-item:last-of-type { /* Rimuovi bordo dall'ultimo item di ogni sezione */
+     border-bottom: none;
+}
+
+/* Stili scrollbar Webkit per .facts-container */
+.facts-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.facts-container::-webkit-scrollbar-track {
+    background: #222; /* Track DARK GRAY (#222) - RIMOSSO !important */
+    border-radius: 4px;
+}
+
+.facts-container::-webkit-scrollbar-thumb {
+    background-color: #a8ff60; /* Thumb LIME */
+    border-radius: 4px;
+    border: 2px solid #222; /* Bordo DARK GRAY (#222) */
 }

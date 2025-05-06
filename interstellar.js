@@ -49,6 +49,15 @@ console.log('Modulo interstellar.js caricato correttamente.');
     const XENOMORPH_DURATION = 3000; // 3 seconds
     const XENOMORPH_SPEED = 500; // Adjusted speed for Xenomorph
 
+    // Define constants for the Laser Gun
+    const LASER_GUN_IMAGE_PATH = 'assets/images/laser.png';
+    const LASER_EFFECT_IMAGE_PATH = 'assets/images/laser2.png';
+    const LASER_AUDIO_PATH = 'assets/audio/laser.wav';
+    const LASER_FLASH_DURATION = 200; // ms for red flash
+    const LASER_ASTEROID_EFFECT_DURATION = 300; // ms for laser2.png on asteroid
+    const SPLAT_IMAGE_PATH = 'assets/images/splat.png'; // NUOVA IMMAGINE PER XENO/LARVA
+    const SPLAT_EFFECT_DURATION = 300; // Durata effetto splat
+
     // Fuel types with their properties
     const FUEL_TYPES = [
         { name: 'Biofuel Capsule', fuelValue: 8, chance: 0.20, image: 'biofuel.png' },
@@ -112,6 +121,17 @@ console.log('Modulo interstellar.js caricato correttamente.');
     // Add a global variable to track game start time
     let gameStartTime = 0; // Variabile globale per tracciare il tempo di inizio del gioco
 
+    // Game variables for Laser Gun
+    let hasLaserGun = false;
+    let laserGunIconElement = null;
+    let laserGunImage = new Image();
+    let laserEffectImage = new Image();
+    let laserAudio = new Audio();
+    let laserGunCollectAudio = new Audio(); // NUOVA VARIABILE PER IL SUONO DI RACCOLTA
+    let splatImage = new Image(); // NUOVA VARIABILE IMMAGINE SPLAT
+
+    let isFirstSpecialItemSpawnThisGame = true; // NUOVA VARIABILE: true per forzare il primo spawn del laser
+
     // Load the planet image
     const planetImage = new Image();
     planetImage.src = 'assets/images/planet.png';
@@ -155,6 +175,9 @@ console.log('Modulo interstellar.js caricato correttamente.');
                             <div class="fuel-segment" style="width: 15px; height: 100%; background-color: #4CAF50; margin-right: 2px;"></div>
                             <div class="fuel-segment" style="width: 15px; height: 100%; background-color: #4CAF50;"></div>
                         </div>
+                    </div>
+                    <div id="laserGunIconContainer" style="width: 40px; height: 40px; display: none; margin: 0 10px;">
+                        <img id="laserGunIcon" src="${LASER_GUN_IMAGE_PATH}" style="width: 100%; height: 100%;" alt="Laser Gun">
                     </div>
                     <div class="timer-container" style="padding: 5px 10px; color: #FFFFFF; font-weight: bold;">
                         <span style="color: #32CD32; margin-right: 10px;">Arrival Time:</span> <!-- MODIFICATO: Aggiunto stile colore verde -->
@@ -350,6 +373,14 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
         const xenomorphAudio = new Audio(XENOMORPH_AUDIO);
 
+        // Load Laser Gun assets
+        laserGunImage.src = LASER_GUN_IMAGE_PATH;
+        laserEffectImage.src = LASER_EFFECT_IMAGE_PATH;
+        laserAudio.src = LASER_AUDIO_PATH;
+        laserGunCollectAudio.src = 'assets/audio/loading.wav'; // CARICA IL NUOVO AUDIO
+        splatImage.src = SPLAT_IMAGE_PATH; // CARICA IMMAGINE SPLAT
+        laserGunIconElement = document.getElementById('laserGunIconContainer');
+
         // Load debris image and sound
         const debrisImage = new Image();
         debrisImage.src = 'assets/images/debris.png';
@@ -422,6 +453,8 @@ console.log('Modulo interstellar.js caricato correttamente.');
         // Recharge sound cooldown
         let rechargeSoundCooldown = false;
 
+        isFirstSpecialItemSpawnThisGame = true; // Inizializza per la prima partita
+
         // Update the fuel display
         function updateFuelDisplay() {
             const fuelSegments = document.querySelectorAll('.fuel-segment');
@@ -460,6 +493,9 @@ console.log('Modulo interstellar.js caricato correttamente.');
         // Add event listeners for keyboard
         function handleKeyDown(e) {
             keysPressed[e.key] = true;
+            if (e.key === 'ArrowUp' && hasLaserGun && gameRunning) {
+                fireLaser();
+            }
         }
         
         function handleKeyUp(e) {
@@ -652,6 +688,17 @@ console.log('Modulo interstellar.js caricato correttamente.');
             console.log('Spawned Protective Shield!');
         }
 
+        function spawnLaserGun() {
+            const laserGunItem = {
+                x: Math.random() * (canvas.width - INTERSTELLAR_ITEM_SIZE),
+                y: -INTERSTELLAR_ITEM_SIZE,
+                previousY: -INTERSTELLAR_ITEM_SIZE,
+                isLaserGun: true
+            };
+            gameItems.push(laserGunItem);
+            console.log('Spawned Laser Gun!');
+        }
+
         function spawnXenomorph() {
             const xenomorph = {
                 x: Math.random() * (canvas.width - INTERSTELLAR_ITEM_SIZE),
@@ -666,29 +713,39 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
         // Add a function to spawn special items
         function spawnSpecialItem() {
-            console.log('spawnSpecialItem() chiamata');
             if (!gameRunning) return;
 
-            const randomChance = Math.random();
-
-            // Log per monitorare il valore di randomChance e il tipo di oggetto generato
-            console.log('Valore randomChance:', randomChance);
-            if (randomChance < 0.2) {
-                console.log('Generazione: Gravity Shifter');
-                spawnGravityShifter();
-            } else if (randomChance < 0.4) {
-                console.log('Generazione: Alien Larva');
-                spawnAlienLarva();
-            } else if (randomChance < 0.6) {
-                console.log('Generazione: Telepathic Core');
-                spawnTelepathicCore();
-            } else if (randomChance < 0.8) {
-                console.log('Generazione: Protective Shield');
-                spawnProtectiveShield();
+            if (isFirstSpecialItemSpawnThisGame) {
+                console.log('Prima generazione speciale della partita: Laser Gun (garantito)');
+                spawnLaserGun();
+                isFirstSpecialItemSpawnThisGame = false;
             } else {
-                console.log('Generazione: Xenomorph');
-                spawnXenomorph();
+                // Logica di spawn probabilistica esistente
+                const specialItemRoll = Math.random();
+                if (specialItemRoll < 0.15) { // 15%
+                    console.log('Generazione: Gravity Shifter');
+                    spawnGravityShifter();
+                } else if (specialItemRoll < 0.30) { // 15%
+                    console.log('Generazione: Alien Larva');
+                    spawnAlienLarva();
+                } else if (specialItemRoll < 0.45) { // 15%
+                    console.log('Generazione: Telepathic Core');
+                    spawnTelepathicCore();
+                } else if (specialItemRoll < 0.60) { // 15%
+                    console.log('Generazione: Protective Shield');
+                    spawnProtectiveShield();
+                } else if (specialItemRoll < 0.75) { // 15%
+                    console.log('Generazione: Xenomorph');
+                    spawnXenomorph();
+                } else if (specialItemRoll < 0.85) { // 10% - Il Laser Gun può ancora apparire probabilisticamente
+                    console.log('Generazione: Laser Gun (probabilistico)');
+                    spawnLaserGun();
+                } else {
+                    // 15% di probabilità che non spawni nulla di speciale in questo ciclo
+                    console.log('Nessun oggetto speciale generato in questo ciclo (probabilistico).');
+                }
             }
+            console.log('spawnSpecialItem() chiamata');
         }
 
         // Check collision between asteroid and cart
@@ -815,6 +872,13 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     }
 
                     return true; // Item collected, remove it
+                } else if (item.isLaserGun) {
+                    console.log('Laser Gun collected!');
+                    laserGunCollectAudio.currentTime = 0; // Riproduci dall'inizio
+                    laserGunCollectAudio.play().catch(e => console.error('Error playing laser collect sound:', e)); // RIPRODUCI IL SUONO
+                    hasLaserGun = true;
+                    if (laserGunIconElement) laserGunIconElement.style.display = 'block'; // Show icon in HUD
+                    return true; // Item collected
                 }
             }
 
@@ -937,6 +1001,60 @@ console.log('Modulo interstellar.js caricato correttamente.');
             }, PROTECTIVE_SHIELD_DURATION);
         }
 
+        function fireLaser() {
+            if (!hasLaserGun || !gameRunning) return;
+
+            console.log("Firing Laser!");
+            hasLaserGun = false;
+            if (laserGunIconElement) laserGunIconElement.style.display = 'none'; // Hide icon
+
+            laserAudio.currentTime = 0;
+            laserAudio.play().catch(e => console.error('Error playing laser sound:', e));
+
+            // Red flash effect
+            const flashOverlay = document.createElement('div');
+            flashOverlay.style.position = 'absolute';
+            
+            // Posiziona flashOverlay esattamente sopra il canvas
+            // canvas.offsetTop e canvas.offsetLeft danno la posizione del canvas
+            // relativa al suo offsetParent (interstellarScreen in questo caso, dato che ha position: relative)
+            flashOverlay.style.top = canvas.offsetTop + 'px';
+            flashOverlay.style.left = canvas.offsetLeft + 'px';
+            flashOverlay.style.width = canvas.width + 'px';
+            flashOverlay.style.height = canvas.height + 'px';
+            flashOverlay.style.backgroundColor = 'rgba(255, 0, 0, 0.3)';
+            flashOverlay.style.zIndex = '1000'; // Ensure it's on top
+            flashOverlay.style.pointerEvents = 'none'; // Allow clicks through
+            
+            const interstellarScreen = document.getElementById('interstellarScreen');
+            if (interstellarScreen) {
+                interstellarScreen.appendChild(flashOverlay);
+            } else {
+                console.error("interstellarScreen element not found for flash overlay");
+                // Fallback: se interstellarScreen non è trovato, questo posizionamento potrebbe non essere corretto.
+                // Considera di aggiungere flashOverlay a interstellarContainer o direttamente al body
+                // se interstellarScreen non è affidabile, ma questo potrebbe richiedere aggiustamenti di posizionamento.
+                // Per ora, lo lascio così, ma è un punto da tenere d'occhio se si verificano problemi.
+                document.body.appendChild(flashOverlay); // Fallback a document.body se interstellarScreen non è trovato
+            }
+
+
+            setTimeout(() => {
+                flashOverlay.remove();
+            }, LASER_FLASH_DURATION);
+
+            // Mark items to be affected by laser
+            gameItems.forEach(item => {
+                if (item.isAsteroid || item.isDiagonalAsteroid) {
+                    item.isBeingLasered = true;
+                    item.laserEffectExpiry = performance.now() + LASER_ASTEROID_EFFECT_DURATION;
+                } else if (item.isXenomorph || item.isAlienLarva) {
+                    item.isBeingSplat = true; // NUOVO STATO PER XENO/LARVA
+                    item.splatEffectExpiry = performance.now() + SPLAT_EFFECT_DURATION; // NUOVA SCADENZA
+                }
+            });
+        }
+
         // Update items and check collisions
         function updateItems() {
             for (let i = gameItems.length - 1; i >= 0; i--) {
@@ -963,7 +1081,8 @@ console.log('Modulo interstellar.js caricato correttamente.');
                 // Update position based on gravity and direction
                 if (item.isDiagonalAsteroid) {
                     item.x += item.directionX * currentSpeed * deltaTime * (1 / INTERSTELLAR_TARGET_FPS);
-                    item.y += item.directionY * currentSpeed * deltaTime * (1 / INTERSTELLAR_TARGET_FPS);
+                    // Applica il gravityMultiplier anche alla componente y del movimento degli asteroidi diagonali
+                    item.y += item.directionY * currentSpeed * deltaTime * (1 / INTERSTELLAR_TARGET_FPS) * gravityMultiplier;
                 } else {
                     // Apply gravity multiplier for vertical movement
                     item.y += currentSpeed * gravityMultiplier * deltaTime * (1 / INTERSTELLAR_TARGET_FPS);
@@ -980,9 +1099,9 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     // If it's asteroid with shield, debris effect is played
                     
                     // If the item was collected (fuel/special) or destroyed (asteroid+shield), remove it
-                    if (item.isFuel || item.isGravityShifter || item.isAlienLarva || item.isTelepathicCore || item.isProtectiveShield || item.isXenomorph || ((item.isAsteroid || item.isDiagonalAsteroid) && shieldActive)) {
+                    if (item.isFuel || item.isGravityShifter || item.isAlienLarva || item.isTelepathicCore || item.isProtectiveShield || item.isXenomorph || ((item.isAsteroid || item.isDiagonalAsteroid) && shieldActive) || item.isLaserGun) {
                         gameItems.splice(i, 1);
-                        console.log(`[Collision] Item ${i} removed after collection/shield hit.`);
+                        console.log(`[Collision/Collection] Item ${i} removed.`);
                         continue; // Skip off-screen check for this item
                     }
                 }
@@ -994,6 +1113,16 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     // DEBUG: Log removal
                     console.log(`[Off-Screen] Item ${i} removed at y: ${item.y.toFixed(2)}`);
                     gameItems.splice(i, 1);
+                }
+            }
+            // After updating positions and checking collisions, handle lasered items
+            for (let i = gameItems.length - 1; i >= 0; i--) {
+                const item = gameItems[i];
+                if ((item.isBeingLasered && performance.now() > item.laserEffectExpiry) ||
+                    (item.isBeingSplat && performance.now() > item.splatEffectExpiry)) { // AGGIUNTA CONDIZIONE PER SPLAT
+                    gameItems.splice(i, 1); // Remove lasered/splatted item
+                    console.log(`[Laser/Splat] Item ${i} removed after effect.`);
+                    // Add points or other effects for destroying asteroid with laser (optional)
                 }
             }
         }
@@ -1246,6 +1375,11 @@ console.log('Modulo interstellar.js caricato correttamente.');
             // Reset the 20-second delay
             gameStartTime = performance.now();
 
+            // Reset laser gun status
+            hasLaserGun = false;
+            if (laserGunIconElement) laserGunIconElement.style.display = 'none';
+            isFirstSpecialItemSpawnThisGame = true; // RESETTA LA VARIABILE PER LA NUOVA PARTITA
+
             // Update displays
             updateFuelDisplay();
             updateTimerDisplay();
@@ -1340,38 +1474,42 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
             // Draw items
             gameItems.forEach((item, index) => {
-                let itemImage;
-                let itemSize = INTERSTELLAR_ITEM_SIZE;
+                let itemImageToDraw = null;
+                let itemSizeToDraw = INTERSTELLAR_ITEM_SIZE;
 
-                if (item.isAsteroid) {
-                    itemImage = item.isSmall ? smallAsteroidImage : asteroidImage;
-                    itemSize = item.isSmall ? INTERSTELLAR_SMALL_ASTEROID_SIZE : INTERSTELLAR_ITEM_SIZE;
-                } else if (item.isDiagonalAsteroid) {
-                    itemImage = diagonalAsteroidImage;
-                    // itemSize remains INTERSTELLAR_ITEM_SIZE
+                if (item.isAsteroid || item.isDiagonalAsteroid) {
+                    if (item.isBeingLasered && laserEffectImage.complete) {
+                        itemImageToDraw = laserEffectImage;
+                    } else {
+                        itemImageToDraw = item.isSmall ? smallAsteroidImage : (item.isDiagonalAsteroid ? diagonalAsteroidImage : asteroidImage);
+                    }
+                    itemSizeToDraw = item.isSmall ? INTERSTELLAR_SMALL_ASTEROID_SIZE : INTERSTELLAR_ITEM_SIZE;
+                } else if (item.isXenomorph || item.isAlienLarva) { // GESTIONE XENO E LARVA
+                    if (item.isBeingSplat && splatImage.complete) { // MOSTRA SPLAT SE ATTIVO
+                        itemImageToDraw = splatImage;
+                    } else if (item.isXenomorph && xenomorphImage.complete) {
+                        itemImageToDraw = xenomorphImage;
+                    } else if (item.isAlienLarva && alienLarvaImage.complete) {
+                        itemImageToDraw = alienLarvaImage;
+                    }
                 } else if (item.isFuel) {
-                    itemImage = fuelImages[item.type.name];
-                    // itemSize remains INTERSTELLAR_ITEM_SIZE
+                    itemImageToDraw = fuelImages[item.type.name];
                 } else if (item.isGravityShifter) {
-                    itemImage = gravityShifterImage;
-                } else if (item.isAlienLarva) {
-                    itemImage = alienLarvaImage;
+                    itemImageToDraw = gravityShifterImage;
                 } else if (item.isTelepathicCore) {
-                    itemImage = telepathicCoreImage;
+                    itemImageToDraw = telepathicCoreImage;
                 } else if (item.isProtectiveShield) {
-                    itemImage = protectiveShieldImage;
-                } else if (item.isXenomorph) {
-                    itemImage = xenomorphImage;
+                    itemImageToDraw = protectiveShieldImage;
+                } else if (item.isLaserGun) {
+                    itemImageToDraw = laserGunImage;
                 }
 
-                if (itemImage && itemImage.complete) {
-                    // DEBUG: Log position before drawing
-                    console.log(`[Draw] Item ${index} - y: ${item.y.toFixed(2)}`);
-                    ctx.drawImage(itemImage, item.x, item.y, itemSize, itemSize);
+                if (itemImageToDraw && itemImageToDraw.complete) {
+                    ctx.drawImage(itemImageToDraw, item.x, item.y, itemSizeToDraw, itemSizeToDraw);
                 } else {
                     // Fallback drawing if image not loaded (optional)
                     ctx.fillStyle = 'red';
-                    ctx.fillRect(item.x, item.y, itemSize, itemSize);
+                    ctx.fillRect(item.x, item.y, itemSizeToDraw, itemSizeToDraw);
                 }
             });
         }

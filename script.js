@@ -4,6 +4,13 @@
 const keyboardSound = new Audio('assets/audio/keyboard.wav');
 keyboardSound.volume = 0.8; // Regola il volume se necessario
 
+// NUOVO: Suono per Game Over
+const gameOverSound = document.getElementById('gameOverSound');
+if (gameOverSound) {
+    gameOverSound.volume = 0.5; // Imposta il volume desiderato
+}
+// --- FINE NUOVO ---
+
 // Funzione helper per riprodurre il suono dei tasti
 window.playKeyboardSound = function() { // Aggiunto a window per accessibilità globale
     console.log("playKeyboardSound called. ReadyState:", keyboardSound.readyState); // <-- DEBUG
@@ -131,11 +138,7 @@ function createShoppingListModal() {
 
     // Crea contenuto scrollabile
     const modalContent = document.createElement('div');
-    // modalContent.classList.add('shopping-list-content'); // Classe opzionale
-    modalContent.style.maxHeight = '60vh'; // Stile inline per scroll
-    modalContent.style.overflowY = 'auto';
-    modalContent.style.textAlign = 'left'; // Allinea testo a sinistra
-    modalContent.style.paddingRight = '15px'; // Aggiungi padding per la scrollbar
+    modalContent.classList.add('facts-container'); // <<< AGGIUNTA CLASSE CORRETTA
 
      if (!hasData) {
         const noDataMessage = document.createElement('p');
@@ -159,11 +162,9 @@ function createShoppingListModal() {
             if (items.length > 0) {
                 const sectionTitle = document.createElement('h3');
                 sectionTitle.textContent = sectionTitles[category] || category;
-                sectionTitle.style.marginTop = '15px'; // Spaziatura
                 modalContent.appendChild(sectionTitle);
 
                 const list = document.createElement('ul');
-                // list.classList.add('shopping-list'); // Classe opzionale
                 list.style.listStyle = 'none'; // Rimuovi pallini
                 list.style.padding = '0';
 
@@ -174,16 +175,12 @@ function createShoppingListModal() {
                     }
 
                     const listItem = document.createElement('li');
-                    // listItem.classList.add('shopping-list-item'); // Classe opzionale
-                    listItem.style.display = 'flex'; // Usa flex per allineare
-                    listItem.style.alignItems = 'center';
-                    listItem.style.marginBottom = '10px'; // Spaziatura
+                    listItem.classList.add('fact-item'); // <<< ASSICURATA CLASSE 'fact-item'
 
                     // Immagine
                     const img = document.createElement('img');
                     img.src = `assets/images/${item.image}`;
                     img.alt = item.name;
-                    // img.classList.add('item-image'); // Classe opzionale
                     img.style.width = '30px'; // Dimensione immagine
                     img.style.height = '30px';
                     img.style.marginRight = '10px';
@@ -191,15 +188,14 @@ function createShoppingListModal() {
 
                     // Nome
                     const nameSpan = document.createElement('span');
-                    // nameSpan.classList.add('item-name'); // Classe opzionale
                     nameSpan.textContent = item.name;
                     nameSpan.style.flexGrow = '1'; // Occupa spazio disponibile
                     nameSpan.style.marginRight = '10px';
                     nameSpan.style.color = '#00ffcc'; // Imposta il colore del testo a verde
+                    nameSpan.style.textAlign = 'left'; // AGGIUNTO: Allinea il testo a sinistra
 
                     // Effetto
                     const effectSpan = document.createElement('span');
-                    // effectSpan.classList.add('item-effect'); // Classe opzionale
                     effectSpan.textContent = getItemEffect(item);
                     effectSpan.style.fontWeight = 'bold'; // Evidenzia effetto
                     effectSpan.style.whiteSpace = 'nowrap'; // Evita che l'effetto vada a capo
@@ -210,20 +206,9 @@ function createShoppingListModal() {
                     list.appendChild(listItem);
                 });
                 modalContent.appendChild(list);
-                // Aggiungi separatore
-                 const hr = document.createElement('hr');
-                 hr.style.border = 'none';
-                 hr.style.borderTop = '1px dashed #ccc';
-                 hr.style.margin = '15px 0';
-                 modalContent.appendChild(hr);
             }
         }
-         // Rimuovi l'ultimo separatore se esiste
-        if (modalContent.lastChild && modalContent.lastChild.tagName === 'HR') {
-            modalContent.removeChild(modalContent.lastChild);
-        }
     }
-
 
     modalContainer.appendChild(modalContent);
     modalOverlay.appendChild(modalContainer);
@@ -252,6 +237,218 @@ function populateShoppingList() {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("DOMContentLoaded event fired."); // DEBUG Iniziale
+
+    // --- INIZIO LOGICA DI PRECARICAMENTO ---
+
+    const ALL_IMAGE_ASSETS = [
+        // Immagini Comuni / Gioco Principale
+        'assets/images/coin.png', 'assets/images/cart.png', 'assets/images/background.png', 'assets/images/shelf.png',
+        'assets/images/conveyor.png', 'assets/images/scanner.png', 'assets/images/sparkle.png', 'assets/images/bronze.png',
+        'assets/images/silver.png', 'assets/images/gold.png', 'assets/images/platinum.png', 'assets/images/diamond.png',
+        // Immagini Items (da game.js - ITEM_PROPERTIES) - Questa è una lista rappresentativa, va completata con TUTTI gli item
+        'assets/images/apple.png', 'assets/images/banana.png', 'assets/images/bread.png', 'assets/images/carrot.png', 'assets/images/chicken.png',
+        'assets/images/egg.png', 'assets/images/fish.png', 'assets/images/milk.png', 'assets/images/pasta.png', 'assets/images/potato.png',
+        'assets/images/rice.png', 'assets/images/tomato.png', 'assets/images/water.png', 'assets/images/cheese.png', 'assets/images/chocolate.png',
+        'assets/images/coffee.png', 'assets/images/lamb.png', 'assets/images/beef.png', 'assets/images/avocado.png', 'assets/images/almonds.png',
+        'assets/images/asparagus.png', 'assets/images/berries.png', 'assets/images/broccoli.png', 'assets/images/cereal.png', 'assets/images/corn.png',
+        'assets/images/grapes.png', 'assets/images/lettuce.png', 'assets/images/mushrooms.png', 'assets/images/oats.png', 'assets/images/onions.png',
+        'assets/images/oranges.png', 'assets/images/pears.png', 'assets/images/peas.png', 'assets/images/peppers.png', 'assets/images/pork.png',
+        'assets/images/shrimp.png', 'assets/images/spinach.png', 'assets/images/strawberries.png', 'assets/images/sugar.png', 'assets/images/tea.png',
+        'assets/images/tofu.png', 'assets/images/yogurt.png', 'assets/images/wine.png', 'assets/images/soda.png', 'assets/images/chips.png',
+        'assets/images/cookies.png', 'assets/images/icecream.png', 'assets/images/pizza.png', 'assets/images/burger.png', 'assets/images/hotdog.png',
+        'assets/images/butter.png', 'assets/images/salmon.png', 'assets/images/tuna.png', 'assets/images/lentils.png', 'assets/images/beans.png',
+        'assets/images/oliveoil.png', 'assets/images/honey.png', 'assets/images/jam.png', 'assets/images/ketchup.png', 'assets/images/mayo.png',
+        'assets/images/mustard.png', 'assets/images/salt.png', 'assets/images/pepper.png', 'assets/images/flour.png', 'assets/images/ricecakes.png',
+        'assets/images/nuts.png', 'assets/images/popcorn.png', 'assets/images/pretzels.png', 'assets/images/cannedtuna.png', 'assets/images/cannedbeans.png',
+        'assets/images/cannedcorn.png', 'assets/images/cannedpeas.png', 'assets/images/cannedtomatoes.png', 'assets/images/frozenpizza.png',
+        'assets/images/frozenfries.png', 'assets/images/frozenvegetables.png', 'assets/images/frozenfruit.png', 'assets/images/orangejuice.png',
+        'assets/images/applejuice.png', 'assets/images/grapejuice.png', 'assets/images/lemonade.png', 'assets/images/icetea.png',
+        'assets/images/energydrink.png', 'assets/images/beer.png', 'assets/images/cider.png', 'assets/images/soyamilk.png', 'assets/images/almondmilk.png',
+        'assets/images/oatmilk.png', 'assets/images/coconutmilk.png', 'assets/images/plantbasedmeat.png', 'assets/images/plantbasedcheese.png',
+        'assets/images/plantbasedyogurt.png', 'assets/images/quinoa.png', 'assets/images/brownrice.png', 'assets/images/wholewheatbread.png',
+        'assets/images/wholewheatpasta.png', 'assets/images/darkchocolate.png', 'assets/images/greentea.png', 'assets/images/blackcoffee.png',
+        'assets/images/sparklingwater.png', 'assets/images/herbaltea.png',
+        // Easter egg / Special Items images from game.js
+        'assets/images/bonus.png', 'assets/images/malus.png', 'assets/images/5sec.png', 'assets/images/greenwashing.png',
+        'assets/images/overconsumption.png', 'assets/images/janitor.png', 'assets/images/double.png', 'assets/images/greta.png',
+        'assets/images/trump.png', 'assets/images/grandma.png', 'assets/images/bear.png', 'assets/images/charity.png', 'assets/images/farmer.png',
+        'assets/images/alien.png', 'assets/images/wizard.png', 'assets/images/refill.png', 'assets/images/refrigerator.png', 'assets/images/lost.png',
+        'assets/images/ny.png', 'assets/images/sound.png', // Assuming sound.png is for a "sound on/off" visual
+        // Immagini Interstellar Mode
+        'assets/images/interstellar_bg.png', 'assets/images/cart2.png', 'assets/images/cart3.png', // include both cart2 and cart3 if used
+        'assets/images/asteroid.png', 'assets/images/asteroid2.png', 'assets/images/asteroid3.png',
+        'assets/images/explosion.png', 'assets/images/debris.png', 'assets/images/gravity.png', 'assets/images/larva.png',
+        'assets/images/brain.png', 'assets/images/shield.png', 'assets/images/xenomorph.png', 'assets/images/laser.png',
+        'assets/images/laser2.png', 'assets/images/splat.png', 'assets/images/planet.png',
+        // Immagini Carburanti (da interstellar.js - FUEL_TYPES)
+        'assets/images/biofuel.png', 'assets/images/solar.png', 'assets/images/algae.png', 'assets/images/hydrogen.png', 'assets/images/fusion.png'
+    ];
+
+    const ALL_AUDIO_ASSETS = [
+        // Audio Comuni / Gioco Principale
+        'assets/audio/keyboard.wav', // Per i click sui pulsanti (definito globalmente)
+        'assets/audio/music.mp3',    // Musica di sottofondo (da index.html)
+        'assets/audio/over.wav',     // Suono Game Over (da index.html)
+        'assets/audio/click.wav',    // Suono generico per click (usato in game.js)
+        'assets/audio/start.wav',    // Suono avvio gioco
+        'assets/audio/win.wav',      // Suono vittoria sfida
+        'assets/audio/collect.wav',  // Suono raccolta oggetto (game.js)
+        'assets/audio/wrong.wav',    // Suono oggetto sbagliato (game.js)
+        'assets/audio/challenge.wav',// Suono nuova sfida (game.js)
+        'assets/audio/coin.wav',     // Suono animazione moneta (game.js)
+        // Audio per specifici item/eventi da game.js (basati sui nomi dei file audio usati)
+        'assets/audio/bonus.wav', 'assets/audio/malus.wav', 'assets/audio/5sec.wav', 'assets/audio/greenwashing.wav',
+        'assets/audio/overconsumption.wav', 'assets/audio/janitor.wav', 'assets/audio/double.wav', 'assets/audio/greta.wav',
+        'assets/audio/trump.wav', 'assets/audio/grandma.wav', 'assets/audio/bear.mp3', // o .wav se è quello corretto
+        'assets/audio/charity.wav', 'assets/audio/farmer.wav', 'assets/audio/alien.wav', // o xenomorph.wav se alien.wav è per altro
+        'assets/audio/wizard.wav', 'assets/audio/refill.wav', 'assets/audio/refrigerator.wav', 'assets/audio/ny.wav',
+        // Audio Interstellar Mode
+        'assets/audio/interstellar.mp3', 'assets/audio/explosion.wav', 'assets/audio/recharge.wav', // recharge per fuel
+        'assets/audio/gravity.wav', 'assets/audio/larva.wav', 'assets/audio/brain.wav', // brain per telepathic core
+        'assets/audio/shield.wav', 'assets/audio/xenomorph.wav', 'assets/audio/laser.wav',
+        'assets/audio/loading.wav', 'assets/audio/debris.wav',
+        'assets/audio/interstellar_over.wav', // Assumendo esista
+        'assets/audio/interstellar_win.wav'  // Assumendo esista
+    ];
+
+    function preloadAsset(src) {
+        return new Promise((resolve, reject) => {
+            if (src.match(/\.(jpeg|jpg|gif|png|webp)$/) != null) {
+                const img = new Image();
+                img.onload = () => resolve({ src, status: 'loaded' });
+                img.onerror = (err) => reject({ src, status: 'error', error: new Error(`Failed to load image: ${src}. Details: ${err}`) });
+                img.src = src;
+            } else if (src.match(/\.(mp3|wav|ogg)$/) != null) {
+                const audio = new Audio();
+                audio.oncanplaythrough = () => resolve({ src, status: 'loaded' });
+                audio.onerror = (err) => reject({ src, status: 'error', error: new Error(`Failed to load audio: ${src}. Details: ${err}`) });
+                audio.src = src;
+                audio.load(); // Importante per avviare il caricamento
+            } else {
+                reject({ src, status: 'error', error: new Error(`Unknown asset type: ${src}`) });
+            }
+        });
+    }
+
+    // Riferimenti ai pulsanti del menu (devono essere definiti prima di disable/enableMenuButtons)
+    const shoppingListButtonPreload = document.getElementById('shopping-list-btn');
+    const startShopButtonPreload = document.getElementById('start-shop-btn');
+    const interstellarButtonPreload = document.getElementById('interstellar-btn');
+
+    function disableMenuButtons() {
+        if (shoppingListButtonPreload) shoppingListButtonPreload.disabled = true;
+        if (startShopButtonPreload) startShopButtonPreload.disabled = true;
+        if (interstellarButtonPreload) interstellarButtonPreload.disabled = true;
+        console.log("Menu buttons disabled for preloading.");
+    }
+
+    function enableMenuButtons() {
+        if (shoppingListButtonPreload) shoppingListButtonPreload.disabled = false;
+        if (startShopButtonPreload) startShopButtonPreload.disabled = false;
+        if (interstellarButtonPreload) interstellarButtonPreload.disabled = false;
+        console.log("Menu buttons enabled after preloading.");
+    }
+
+    async function preloadAllAssets() {
+        const assetPromises = [];
+        ALL_IMAGE_ASSETS.forEach(src => assetPromises.push(preloadAsset(src)));
+        ALL_AUDIO_ASSETS.forEach(src => assetPromises.push(preloadAsset(src)));
+
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.id = 'loadingOverlay';
+        loadingOverlay.style.position = 'fixed';
+        loadingOverlay.style.top = '0';
+        loadingOverlay.style.left = '0';
+        loadingOverlay.style.width = '100%';
+        loadingOverlay.style.height = '100%';
+        loadingOverlay.style.backgroundColor = 'rgba(0,0,0,0.95)';
+        loadingOverlay.style.color = '#a8ff60'; // Colore verde retro
+        loadingOverlay.style.display = 'flex';
+        loadingOverlay.style.flexDirection = 'column';
+        loadingOverlay.style.justifyContent = 'center';
+        loadingOverlay.style.alignItems = 'center';
+        loadingOverlay.style.zIndex = '10001';
+        loadingOverlay.style.fontFamily = "'Press Start 2P', cursive";
+        loadingOverlay.innerHTML = `
+            <h2 style="margin-bottom: 20px; font-size: 1.5em;">LOADING ASSETS</h2>
+            <div style="width: 80%; max-width: 400px; background-color: #333; border: 2px solid #a8ff60; margin-bottom: 15px;">
+                <div id="loadingProgressBar" style="width: 0%; height: 30px; background-color: #a8ff60; text-align: center; line-height: 30px; color: #000;">
+                    <span id="loadingProgressText" style="font-weight: bold;">0%</span>
+                </div>
+            </div>
+            <p id="loadingStatus" style="font-size: 0.8em; margin-top: 10px; color: #fff;">Initializing...</p>
+            <p id="currentAsset" style="font-size: 0.6em; margin-top: 5px; color: #ccc; max-width: 90%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></p>
+        `;
+        document.body.appendChild(loadingOverlay);
+
+        const progressBar = document.getElementById('loadingProgressBar');
+        const progressText = document.getElementById('loadingProgressText');
+        const statusP = document.getElementById('loadingStatus');
+        const currentAssetP = document.getElementById('currentAsset');
+        let loadedCount = 0;
+        const totalAssets = assetPromises.length;
+
+        function updateProgress(assetSrc, statusType) {
+            loadedCount++;
+            const percentage = Math.round((loadedCount / totalAssets) * 100);
+            if (progressBar) progressBar.style.width = percentage + '%';
+            if (progressText) progressText.textContent = percentage + '%';
+            const fileName = assetSrc.split('/').pop();
+            if (statusP) statusP.textContent = `${statusType === 'error' ? 'Error loading' : 'Loaded'}: ${fileName}`;
+            if (currentAssetP) currentAssetP.textContent = `(${loadedCount}/${totalAssets}) ${assetSrc}`;
+            console.log(`Asset ${statusType}: ${assetSrc} (${loadedCount}/${totalAssets})`);
+        }
+
+        const wrappedPromises = assetPromises.map(promise =>
+            promise
+                .then(result => {
+                    updateProgress(result.src, 'loaded');
+                    return result;
+                })
+                .catch(errorResult => {
+                    updateProgress(errorResult.src, 'error');
+                    console.error(errorResult.error ? errorResult.error.message : `Failed to load ${errorResult.src}`);
+                    // Non bloccare Promise.all, ma logga l'errore
+                    return errorResult; // Restituisci l'oggetto errore per permettere a Promise.all di continuare
+                })
+        );
+
+        try {
+            await Promise.all(wrappedPromises);
+            console.log("All assets preloading attempted.");
+            if (statusP) statusP.textContent = "All assets ready!";
+            if (currentAssetP) currentAssetP.textContent = "Launching game...";
+            setTimeout(() => {
+                if (loadingOverlay) loadingOverlay.remove();
+                enableMenuButtons();
+                // Avvia la musica di sottofondo e mostra la schermata iniziale
+                const backgroundMusic = document.getElementById('backgroundMusic');
+                if (backgroundMusic) {
+                    backgroundMusic.play().catch(e => console.warn("Autoplay for background music might be blocked by the browser.", e));
+                }
+                if (window.showStartScreen) {
+                    console.log("Preloading complete. Showing Start Screen...");
+                    window.showStartScreen();
+                } else {
+                    console.error("window.showStartScreen is not defined after preload!");
+                }
+                console.log("Event listeners attached and initial screen shown after preload.");
+            }, 800); // Breve ritardo per mostrare il messaggio "All assets ready!"
+        } catch (error) { // Questo catch è per errori catastrofici in Promise.all, meno probabile con la gestione individuale
+            console.error("Critical error during asset preloading phase:", error);
+            if (loadingOverlay) {
+                loadingOverlay.innerHTML = '<h2>Error loading critical assets. Please refresh.</h2>';
+            }
+        }
+    }
+
+    // Inizia il precaricamento
+    disableMenuButtons();
+    preloadAllAssets(); // Questa è una funzione async, ma non usiamo await qui per non bloccare DOMContentLoaded.
+                        // La logica di sblocco UI è dentro preloadAllAssets.
+
+    // --- FINE LOGICA DI PRECARICAMENTO ---
+
 
     // --- OTTIENI RIFERIMENTI A TUTTI GLI ELEMENTI NECESSARI ---
     // Schermate
@@ -298,10 +495,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreElement = document.getElementById('score');
     const timerElement = document.getElementById('timer');
 
-    // Audio (se servono controlli globali qui)
-    const backgroundMusic = document.getElementById('backgroundMusic');
-    const gameOverSound = document.getElementById('gameOverSound');
-    // ... altri suoni se necessario ...
+    // Audio (riferimento a backgroundMusic spostato dentro preloadAllAssets per coerenza)
+    // const backgroundMusic = document.getElementById('backgroundMusic');
+
 
     // Verifica elementi principali
     if (!startScreen) console.error("Elemento 'startScreen' non trovato!");
@@ -311,31 +507,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FUNZIONI DI VISUALIZZAZIONE SCHERMATE (Definite qui per chiarezza) ---
     function showScreen(screenToShow) {
-        console.log(`Attempting to show screen: ${screenToShow ? screenToShow.id : 'null'}`); // DEBUG
-        // Nascondi tutte le schermate principali
+        console.log("Showing screen:", screenToShow.id); // Log per debug
+        // Nascondi tutte le schermate
         document.querySelectorAll('.app-screen').forEach(screen => {
-             if (screen) screen.style.display = 'none';
-        });
-        // Nascondi tutte le finestre modali (quelle non definite come .app-screen)
-        document.querySelectorAll('.retro-window, .modal').forEach(modal => {
-            if (modal && modal.id !== 'loadingScreen') { // Non nascondere il loading se presente
-                 modal.style.display = 'none';
-            }
+            screen.style.display = 'none';
         });
 
+        // Mostra la schermata richiesta
         if (screenToShow) {
-            // Determina display corretto (flex per container principali, block per altri?)
-            const displayStyle = (screenToShow.classList.contains('retro-container') || screenToShow.classList.contains('app-screen')) ? 'flex' : 'block';
+            // Usa 'flex' per i contenitori principali, altrimenti 'block'
+            const displayStyle = screenToShow.classList.contains('retro-container') ||
+                                 screenToShow.id === 'gameScreen' || // Aggiunto gameScreen
+                                 screenToShow.id === 'gameOver' || // Aggiunto gameOver
+                                 screenToShow.id === 'factsScreen' // Aggiunto factsScreen
+                                 ? 'flex' : 'block';
             screenToShow.style.display = displayStyle;
-             console.log(`Screen ${screenToShow.id} display set to ${displayStyle}`); // DEBUG
+            console.log(`Set display of ${screenToShow.id} to ${displayStyle}`); // Log
+
+            // --- RIPRISTINA LOGICA ORIGINALE SFONDO BODY ---
+            if (screenToShow.id === 'gameScreen') {
+                document.body.style.backgroundColor = '#000000'; // Sfondo NERO per il gioco
+                console.log("Body background set to BLACK for gameScreen"); // Log
+            } else {
+                document.body.style.backgroundColor = '#0f380f'; // Sfondo VERDE per le altre schermate
+                console.log("Body background set to GREEN"); // Log
+            }
+            // --- FINE RIPRISTINO ---
+
         } else {
-            console.error("Tentativo di mostrare una schermata nulla o non trovata.");
+            console.error("showScreen called with null or undefined screen");
+        }
+
+        // Ferma la musica di sottofondo se si esce dalla schermata iniziale
+        // e non si entra nella schermata di gioco (es. si va a gameOver da game)
+        if (screenToShow && screenToShow.id !== 'startScreen' && screenToShow.id !== 'gameScreen') {
+            // backgroundMusic.pause(); // Commentato o rimosso se la musica deve continuare
+        } else if (screenToShow && screenToShow.id === 'startScreen') {
+            // backgroundMusic.play().catch(e => console.log("Autoplay prevented:", e)); // Riattiva la musica nel menu se necessario
         }
     }
 
     // Rendi globali le funzioni chiamate da altri script o da HTML inline (se ce ne fossero rimasti)
     window.showStartScreen = function() {
-        console.log("Showing Start Screen");
+        console.log("Showing Start Screen (called by window.showStartScreen)");
         showScreen(startScreen);
         // Potrebbe essere necessario fermare/resettare stati di gioco qui
         // stopGameMusic(); // Esempio
@@ -350,8 +564,21 @@ document.addEventListener('DOMContentLoaded', () => {
         showScreen(gameScreen);
     }
 
-    window.showGameOverScreen = function() {
-        console.log("Showing Game Over Screen");
+    window.showGameOverScreen = function(score, collectedItems, feedback, medalImageSrc) {
+        console.log("Mostra schermata Game Over. Punteggio:", score);
+        const backgroundMusic = document.getElementById('backgroundMusic'); // Ottieni riferimento qui
+        // Interrompi musica di sottofondo se in esecuzione
+        if (backgroundMusic && !backgroundMusic.paused) {
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0; // Resetta per la prossima partita
+        }
+
+        // NUOVO: Riproduci suono Game Over
+        if (gameOverSound) {
+            gameOverSound.play().catch(e => console.error("Errore nella riproduzione del suono di game over:", e));
+        }
+        // --- FINE NUOVO ---
+
         showScreen(gameOverScreen);
         // Qui potresti popolare finalScore, medalImage, collectedItemsList etc.
         // usando i dati passati da game.js
@@ -370,12 +597,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- EVENT LISTENERS CENTRALIZZATI ---
-    console.log("Attaching event listeners..."); // DEBUG
+    console.log("Attaching event listeners (will be active after preload)..."); // DEBUG
 
     // --- Listener Menu Principale ---
 
     // Pulsante "Shopping List"
-    if (shoppingListButton) {
+    if (shoppingListButton) { // Questa variabile 'shoppingListButton' si riferisce a quella dichiarata all'inizio del blocco DOMContentLoaded.
         shoppingListButton.addEventListener('click', () => {
             console.log("Shopping List button clicked"); // DEBUG
             playKeyboardSound();
@@ -401,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Pulsante "Interstellar Mode" (apre la modale Interstellar)
-    // CORREZIONE: L'ID corretto in index.html è 'interstellar-btn'
     if (interstellarButton) { // Usa la variabile corretta
         interstellarButton.addEventListener('click', () => { // Correggi l'apostrofo mancante
              console.log("Interstellar button clicked"); // DEBUG
@@ -601,12 +827,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- INIZIALIZZAZIONE ---
-    console.log("Attempting to preload keyboard sound..."); // DEBUG
-    keyboardSound.load(); // Tentativo di pre-caricamento
-    console.log("Initial setup: Showing Start Screen..."); // DEBUG
-    window.showStartScreen(); // Mostra la schermata iniziale al caricamento
-    console.log("Event listeners attached and initial screen shown."); // DEBUG Finale
+    // --- INIZIALIZZAZIONE (SPOSTATA DENTRO IL COMPLETAMENTO DI preloadAllAssets) ---
+    // console.log("Attempting to preload keyboard sound..."); // DEBUG -> Ora parte di ALL_AUDIO_ASSETS
+    // keyboardSound.load(); 
+    // if (gameOverSound) { 
+    //     console.log("Attempting to preload game over sound..."); // DEBUG -> Ora parte di ALL_AUDIO_ASSETS
+    //     gameOverSound.load();
+    // } 
+    // console.log("Initial setup: Showing Start Screen..."); // DEBUG -> Spostato
+    // window.showStartScreen(); // Mostra la schermata iniziale al caricamento -> Spostato
+    // console.log("Event listeners attached and initial screen shown."); // DEBUG Finale -> Spostato
 
 });
 

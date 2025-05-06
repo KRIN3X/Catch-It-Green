@@ -1339,50 +1339,61 @@ function updatePointsAnimations() {
 function checkCollision(item) {
     // If this item has already been counted, don't count it again
     if (item.counted) {
+        return false; 
+    }
+
+    // Item should generally be moving downwards to be collected.
+    if (item.y < item.previousY - 0.5) { 
         return false;
     }
 
-    // Ensure the item is moving downward (not upward or static)
-    // Allow for slight upward movement due to potential floating point inaccuracies
-    if (item.y < item.previousY - 0.1) {
-        return false;
+    // Define PADDING values to refine the cart's collision area.
+    // PADDING_SIDE: How much to shrink the collision area from each side of the cart.
+    //               A larger value makes the sides less sensitive.
+    // PADDING_TOP: How many pixels the item must penetrate the cart's visual top edge.
+    //              A smaller value means earlier collection from the top.
+    const PADDING_SIDE = 25; // px. Example: Shrinks effective width by 50px total.
+    const PADDING_TOP = 5;   // px. Example: Item must be 5px into the cart from the top.
+
+    // Calculate the cart's effective hitbox for collision detection
+    const cartHitboxX = cartX + PADDING_SIDE;
+    const cartHitboxY = cartY + PADDING_TOP;
+    // Width of the cart's collision area is reduced by PADDING_SIDE on both left and right
+    const cartHitboxWidth = CART_WIDTH - (2 * PADDING_SIDE);
+    // Height of the cart's collision area is from PADDING_TOP to the bottom of the cart
+    const cartHitboxHeight = CART_HEIGHT - PADDING_TOP;
+
+    // Item's hitbox (using its full visual dimensions)
+    const itemHitboxX = item.x;
+    const itemHitboxY = item.y;
+    const itemHitboxWidth = ITEM_SIZE;
+    const itemHitboxHeight = ITEM_SIZE;
+
+    // Defensive check: if padding is too large, hitbox might be invalid.
+    if (cartHitboxWidth <= 0 || cartHitboxHeight <= 0) {
+        // console.warn("Cart hitbox has zero or negative dimensions. Adjust PADDING values.");
+        return false; // No collision possible with an invalid hitbox
     }
 
-    // Get the item boundaries
-    const itemLeft = item.x;
-    const itemRight = item.x + ITEM_SIZE;
-    // Item vertical range during the last frame
-    const itemPreviousBottom = item.previousY + ITEM_SIZE;
-    const itemCurrentBottom = item.y + ITEM_SIZE;
+    // Standard AABB (Axis-Aligned Bounding Box) collision check:
+    // Checks if the item's hitbox overlaps with the cart's refined hitbox.
+    
+    const horizontalOverlap = itemHitboxX < cartHitboxX + cartHitboxWidth &&
+                              itemHitboxX + itemHitboxWidth > cartHitboxX;
 
-    // Get the cart boundaries
-    const cartTop = cartY;
-    const cartBottom = cartY + CART_HEIGHT; // MODIFICATO: Usa l'intera altezza del carrello
-    const cartLeft = cartX;
-    const cartRight = cartX + CART_WIDTH;
+    const verticalOverlap = itemHitboxY < cartHitboxY + cartHitboxHeight &&
+                            itemHitboxY + itemHitboxHeight > cartHitboxY;
+    
+    const isColliding = horizontalOverlap && verticalOverlap;
 
-    // --- Refined Collision Logic ---
-    // 1. Check standard horizontal overlap (AABB)
-    const isHorizontalOverlap = (
-        itemLeft < cartRight &&
-        itemRight > cartLeft
-    );
-
-    // 2. Check vertical overlap using previous position against the *entire* cart height
-    const isVerticalOverlap = (
-        itemPreviousBottom <= cartBottom && // Item started at or above the *bottom* of the cart
-        itemCurrentBottom >= cartTop       // Item ended at or below the *top* of the cart
-    );
-    // --- End of Refined Collision Logic ---
-
-    // Both vertical and horizontal overlap must occur
-    const isColliding = isVerticalOverlap && isHorizontalOverlap;
-
-    // Debug collision detection
+    // Optional: For debugging collision areas
+    /*
     if (isColliding) {
-        console.log(`Collision detected! Item Y range (${itemPreviousBottom.toFixed(2)} -> ${itemCurrentBottom.toFixed(2)}), Cart Y range (${cartTop}-${cartBottom})`);
-        item.counted = true; // Mark as counted immediately upon detection
+        console.log(`Collision: Item (${item.type.name}) at [${item.x.toFixed(2)}, ${item.y.toFixed(2)}]`);
+        console.log(`Item Box: L:${itemHitboxX.toFixed(2)}, R:${(itemHitboxX + itemHitboxWidth).toFixed(2)}, T:${itemHitboxY.toFixed(2)}, B:${(itemHitboxY + itemHitboxHeight).toFixed(2)}`);
+        console.log(`Cart Hitbox: X:${cartHitboxX.toFixed(2)}, Y:${cartHitboxY.toFixed(2)}, W:${cartHitboxWidth.toFixed(2)}, H:${cartHitboxHeight.toFixed(2)}`);
     }
+    */
 
     return isColliding;
 }

@@ -12,23 +12,28 @@
         <source src="./assets/audio/music.mp3" type="audio/mpeg">
         Your browser does not support the audio element.
     </audio>
+    <!-- NUOVO: Audio per Game Over -->
+    <audio id="gameOverSound">
+        <source src="./assets/audio/over.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
 
     <!-- Contenitore UNICO per la schermata iniziale/menu -->
     <div id="startScreen" class="retro-container app-screen">
         <div class="retro-border">
             <div class="retro-content">
-                <h1>Catch It Green!🛒🌱</h1>
+                <h1>Catch It Green!</h1>
                 <!-- Contenuto del menu spostato qui -->
                 <div class="text-area">
                     <p>Rush into the supermarket — it’s time to shop fast and eco-smart!<br>
-                    First, check your shopping list👀: those are the eco-items you need to collect✅.<br>
-                    Avoid high-carbon products❌— they’ll drag your score down!<br>
+                    First, check your shopping list: those are the eco-items you need to collect.<br>
+                    Avoid high-carbon products— they’ll drag your score down!<br>
                     Got it? Then come back here and start shopping!</p>
                 </div>
                 <nav class="menu">
-                    <button id="shopping-list-btn" class="retro-button">📝 Shopping List</button>
-                    <button id="start-shop-btn" class="retro-button">🛍️ Shop Now</button> <!-- Questo pulsante ora apre la finestra modale -->
-                    <button id="interstellar-btn" class="retro-button">🪐 Interstellar Mode</button> <!-- Aggiunto ID per Interstellar -->
+                    <button id="shopping-list-btn" class="retro-button">Shopping List</button>
+                    <button id="start-shop-btn" class="retro-button">Shop Now</button> <!-- Questo pulsante ora apre la finestra modale -->
+                    <button id="interstellar-btn" class="retro-button">Interstellar Mode</button> <!-- Aggiunto ID per Interstellar -->
                 </nav>
             </div>
         </div>
@@ -40,9 +45,9 @@
             <div class="retro-content">
                 <h2>Ready to Shop?</h2>
                 <div class="text-area">
-                    <p>Use the arrow keys⬅️➡️ to move your cart and collect as many low-carbon items as you can before time runs out⏱️.</p>
+                    <p>Use the arrow keys to move your cart and collect as many low-carbon items as you can before time runs out.</p>
                     <p>Catch the five items shown at the top of the screen to complete the Special Challenge — if you succeed, the supermarket will buy a Carbon Credit Token thanks to your sustainable choices.</p>
-                    <p>And if you reach 350 points or more🏆, you’ll unlock a mysterious pixel-art character hidden deep in the game👤.</p>
+                    <p>And if you reach 350 points or more, you’ll unlock a mysterious pixel-art character hidden deep in the game.</p>
                 </div>
                 <button id="confirm-shop-btn" class="retro-button">Shop Now</button> <!-- Questo avvia il gioco -->
                 <button id="close-shop-window-btn" class="retro-button close-button">X</button>
@@ -128,6 +133,18 @@
                             <strong>Wobble Asteroid</strong> Unstable movement
                         </div>
                     </div>
+                    <div class="eco-log-item">
+                        <img src="assets/images/larva.png" alt="Alien Larva" class="eco-log-item-image">
+                        <div class="eco-log-item-details">
+                            <strong>Alien Larva</strong> Blurs screen
+                        </div>
+                    </div>
+                    <div class="eco-log-item">
+                        <img src="assets/images/xenomorph.png" alt="Xenomorph Spores" class="eco-log-item-image">
+                        <div class="eco-log-item-details">
+                            <strong>Xenomorph</strong> Slows cart + blurs screen
+                        </div>
+                    </div>
                 </div>
 
                 <hr style="border: none; border-top: 1px dashed #a8ff60; margin: 15px 0;">
@@ -147,21 +164,16 @@
                         </div>
                     </div>
                     <div class="eco-log-item">
-                        <img src="assets/images/larva.png" alt="Alien Larva" class="eco-log-item-image">
-                        <div class="eco-log-item-details">
-                            <strong>Alien Larva</strong> Blurs screen
-                        </div>
-                    </div>
-                     <div class="eco-log-item">
                         <img src="assets/images/brain.png" alt="Telepathic Core" class="eco-log-item-image">
                         <div class="eco-log-item-details">
                             <strong>Telepathic Core</strong> Reveals drop paths
                         </div>
                     </div>
                     <div class="eco-log-item">
-                        <img src="assets/images/xenomorph.png" alt="Xenomorph Spores" class="eco-log-item-image">
+                        <img src="assets/images/laser.png" alt="Laser Gun" class="eco-log-item-image">
                         <div class="eco-log-item-details">
-                            <strong>Xenomorph</strong> Slows cart + blurs screen
+                            <strong>Laser Gun</strong> Blasts all hazards
+                            <div style="font-size: 0.8em; opacity: 0.8; margin-top: 3px;">(Press ↑ to fire)</div>
                         </div>
                     </div>
                 </div>
