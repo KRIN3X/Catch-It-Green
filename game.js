@@ -8,6 +8,8 @@ const CART_HEIGHT = 100; // Doubled from 50
 const ITEM_SIZE = 100; // Doubled from 50
 const TARGET_FPS = 60; // Target frames per second for delta time normalization
 
+let cartVelocity = 0;
+
 // Sound manager for improved audio handling, especially on mobile
 let soundManager = {
     initialized: false,
@@ -1119,22 +1121,41 @@ function gameLoop(timestamp) {
     requestAnimationFrame(gameLoop);
 }
 
+function lerp(start, end, t) {
+    return start + (end - start) * t;
+  }
+
+
 // Update cart position based on key presses
 function updateCartPosition() {
     let effectiveCartSpeed = CART_SPEED;
+    let targetDirection = 0; // -1 (left), 1 (right), 0 (idle)
+    let smoothingFactor = 7; // piu alto = più scattante
+    let targetVelocityX = 0;
+
     if (cartSlowed && Date.now() < cartSlowedEndTime) {
         effectiveCartSpeed = CART_SPEED / 2;
     } else if (cartSlowed && Date.now() >= cartSlowedEndTime) {
         cartSlowed = false;
     }
+
     if (keysPressed['ArrowLeft'] || keysPressed['a']) {
-        cartX -= effectiveCartSpeed * deltaTime;
+        targetDirection = -1;
     }
     
     if (keysPressed['ArrowRight'] || keysPressed['d']) {
-        cartX += effectiveCartSpeed * deltaTime;
+        targetDirection = +1;
     }
-    
+
+    //direzione della velocita
+    targetVelocityX = targetDirection * effectiveCartSpeed;
+
+    //velocita attuale + accelerazione
+    cartVelocity += (targetVelocityX - cartVelocity) * smoothingFactor * deltaTime; 
+
+    //applica posizione nuova
+    cartX += cartVelocity * deltaTime;
+
     // Touch controls are now handled directly in the touchmove event
     // No need to handle them here as we're directly setting cartX in the event
     
