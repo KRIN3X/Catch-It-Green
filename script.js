@@ -242,7 +242,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ALL_IMAGE_ASSETS = [
         // Immagini Comuni / Gioco Principale
+        'assets/images/loading.png', // AGGIUNTO
         'assets/images/coin.png', 'assets/images/cart.png', 'assets/images/background.png', 'assets/images/shelf.png',
+        'assets/images/apple.png', 'assets/images/organic_carrot.png', 'assets/images/bread.png', 'assets/images/croissant.png',
         'assets/images/conveyor.png', 'assets/images/scanner.png', 'assets/images/sparkle.png', 'assets/images/bronze.png',
         'assets/images/silver.png', 'assets/images/gold.png', 'assets/images/platinum.png', 'assets/images/diamond.png',
         // Immagini Items (da game.js - ITEM_PROPERTIES) - Questa è una lista rappresentativa, va completata con TUTTI gli item
@@ -355,23 +357,25 @@ document.addEventListener('DOMContentLoaded', () => {
         ALL_AUDIO_ASSETS.forEach(src => assetPromises.push(preloadAsset(src)));
 
         const loadingOverlay = document.createElement('div');
-        loadingOverlay.id = 'loadingOverlay';
+        loadingOverlay.id = 'loadingOverlay'; // Assicurati che l'ID corrisponda a quello usato in style.css
         loadingOverlay.style.position = 'fixed';
         loadingOverlay.style.top = '0';
         loadingOverlay.style.left = '0';
         loadingOverlay.style.width = '100%';
         loadingOverlay.style.height = '100%';
         loadingOverlay.style.backgroundColor = 'rgba(0,0,0,0.95)';
-        loadingOverlay.style.color = '#a8ff60'; // Colore verde retro
+        loadingOverlay.style.color = '#a8ff60';
         loadingOverlay.style.display = 'flex';
         loadingOverlay.style.flexDirection = 'column';
         loadingOverlay.style.justifyContent = 'center';
         loadingOverlay.style.alignItems = 'center';
-        loadingOverlay.style.zIndex = '10001';
+        loadingOverlay.style.zIndex = '10001'; // Assicurati che sia sopra altri elementi se necessario
         loadingOverlay.style.fontFamily = "'Press Start 2P', cursive";
+        // AGGIUNTO: Immagine di caricamento e aggiustamenti HTML per coerenza con style.css
         loadingOverlay.innerHTML = `
+            <img id="loading-image" src="assets/images/loading.png" alt="Loading..." style="width: 100px; height: 100px; margin-bottom: 20px; image-rendering: pixelated;">
             <h2 style="margin-bottom: 20px; font-size: 1.5em;">LOADING ASSETS</h2>
-            <div style="width: 80%; max-width: 400px; background-color: #333; border: 2px solid #a8ff60; margin-bottom: 15px;">
+            <div id="loadingProgressContainer" style="width: 80%; max-width: 400px; background-color: #333; border: 2px solid #a8ff60; margin-bottom: 15px;">
                 <div id="loadingProgressBar" style="width: 0%; height: 30px; background-color: #a8ff60; text-align: center; line-height: 30px; color: #000;">
                     <span id="loadingProgressText" style="font-weight: bold;">0%</span>
                 </div>
@@ -421,11 +425,11 @@ document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 if (loadingOverlay) loadingOverlay.remove();
                 enableMenuButtons();
-                // Avvia la musica di sottofondo e mostra la schermata iniziale
-                const backgroundMusic = document.getElementById('backgroundMusic');
-                if (backgroundMusic) {
-                    backgroundMusic.play().catch(e => console.warn("Autoplay for background music might be blocked by the browser.", e));
-                }
+                // NON AVVIARE LA MUSICA QUI
+                // const backgroundMusic = document.getElementById('backgroundMusic');
+                // if (backgroundMusic) {
+                //     backgroundMusic.play().catch(e => console.warn("Autoplay for background music might be blocked by the browser.", e));
+                // }
                 if (window.showStartScreen) {
                     console.log("Preloading complete. Showing Start Screen...");
                     window.showStartScreen();
@@ -551,9 +555,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.showStartScreen = function() {
         console.log("Showing Start Screen (called by window.showStartScreen)");
         showScreen(startScreen);
-        // Potrebbe essere necessario fermare/resettare stati di gioco qui
-        // stopGameMusic(); // Esempio
-        // playMenuMusic(); // Esempio
+
+        // INTERROMPI LA MUSICA DI SOTTOFONDO SE IN ESECUZIONE (quando si torna al menu)
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        if (backgroundMusic && !backgroundMusic.paused) {
+            backgroundMusic.pause();
+            backgroundMusic.currentTime = 0; // Resetta per la prossima volta
+            console.log("Background music stopped on returning to start screen.");
+        }
+
         if (typeof stopGame === 'function') stopGame(); // Ferma gioco se attivo
         if (typeof stopInterstellar === 'function') stopInterstellar(); // Ferma interstellar se attivo
     }
@@ -571,6 +581,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (backgroundMusic && !backgroundMusic.paused) {
             backgroundMusic.pause();
             backgroundMusic.currentTime = 0; // Resetta per la prossima partita
+            console.log("Background music stopped for Game Over.");
         }
 
         // NUOVO: Riproduci suono Game Over
@@ -652,6 +663,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (readyToShopWindow) {
                 readyToShopWindow.style.display = 'none'; // Nasconde modale Shop
             }
+
+            // AVVIA LA MUSICA DI SOTTOFONDO QUI
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            if (backgroundMusic) {
+                backgroundMusic.currentTime = 0; // Assicura che parta dall'inizio
+                backgroundMusic.play().catch(e => console.error("Error playing background music for shop mode:", e));
+                console.log("Background music started for shop mode.");
+            }
+
             // Assicurati che startGame sia definita e accessibile (potrebbe essere in game.js)
             if (typeof window.startGame === 'function') { // Controlla su window se non è locale
                 console.log("Avvio gioco principale...");
@@ -839,8 +859,3 @@ document.addEventListener('DOMContentLoaded', () => {
     // console.log("Event listeners attached and initial screen shown."); // DEBUG Finale -> Spostato
 
 });
-
-// ... eventuali altre funzioni globali definite in script.js ...
-// Assicurati che funzioni come startGame, restartGame, startInterstellarMode, displayScoreChart
-// siano definite NEI LORO RISPETTIVI FILE (game.js, interstellar.js) e rese globali
-// assegnandole a 'window', ad esempio: window.startGame = function() { ... };
