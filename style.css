@@ -3,25 +3,28 @@
 
 body {
     background-color: #0f380f; /* Verde Game Boy */
-    font-family: 'Press Start 2P', sans-serif;
-    color: #ffffff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
+    font-family: 'Press Start 2P', cursive; /* MODIFICATO: Usare cursive come fallback generico */
+    color: white;
     margin: 0;
     padding: 20px;
     box-sizing: border-box;
+    display: flex; /* USA FLEXBOX */
+    flex-direction: column; /* IMPILA I FIGLI VERTICALMENTE */
+    align-items: center; /* CENTRA I FIGLI ORIZZONTALMENTE */
+    min-height: calc(100vh - 40px); /* Altezza minima per riempire la viewport meno il padding */
 }
 
-.retro-container {
+.retro-container { /* Classe usata da #startScreen */
     width: 90%;
     max-width: 600px; /* Limita la larghezza su schermi grandi */
     background-color: #000000; /* Finestra nera */
     border: 4px solid #ffffff; /* Bordo iniziale */
-    padding: 30px; /* AUMENTATO (o aggiusta secondo necessità) per compensare padding rimossi */
+    padding: 30px;
     box-shadow: 0 0 10px #a8ff60, 0 0 20px #a8ff60; /* Effetto glow */
-    position: relative; /* Necessario per il bordo animato */
+    position: relative;
+    /* margin: 20px auto; Rimosso auto orizzontale, la centratura è gestita da flex su body */
+    margin-top: 0; /* Il messaggio personale ha già un margin-bottom */
+    margin-bottom: 20px; /* Margine inferiore per .retro-container */
 }
 
 /* Bordo animato - MODIFICATO */
@@ -975,7 +978,7 @@ h2 { /* Esempio sottotitolo */
     gap: 15px; /* Spazio tra i pulsanti */
     width: 100%; /* Occupa la larghezza disponibile */
     max-width: 600px; /* Larghezza massima per i bottoni in riga */
-    margin-top: 20px; /* Aggiunge un po' di spazio sopra i pulsanti */
+    margin-top: 20px; /* Aggiunge un po' di spazio sopra i bottoni */
     margin-bottom: 0; /* Rimuovi margine inferiore se presente */
 }
 
@@ -1189,6 +1192,450 @@ h2 { /* Esempio sottotitolo */
     border: 2px solid #222; /* Bordo DARK GRAY (#222) */
 }
 
+#loading-image {
+    width: 100px; /* O la dimensione che hai impostato */
+    height: 100px; /* O la dimensione che hai impostato */
+    margin-bottom: 20px;
+    image-rendering: pixelated;
+    animation: spin 2s linear infinite; /* AGGIUNTA ANIMAZIONE */
+}
+
+/* AGGIUNTA KEYFRAMES PER L'ANIMAZIONE */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loadingProgressContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 4px solid #a8ff60;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    box-shadow: 0 0 15px #a8ff60, 0 0 30px #a8ff60;
+    opacity: 0.9;
+}
+
+#loadingProgressContainer h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #a8ff60;
+    text-align: center;
+}
+
+#loadingProgressContainer p {
+    font-size: 14px;
+    margin: 0;
+    color: #ffffff;
+    text-align: center;
+}
+
+#progressBar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+    width: 100%;
+}
+
+#progressBar div {
+    height: 100%;
+    background-color: #a8ff60;
+    transition: width 0.4s ease;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Animazione per il caricamento */
+@keyframes loadingAnim {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+
+#progressBar div {
+    animation: loadingAnim 2s ease-in-out forwards;
+}
+
+/* Aggiunto per il testo di stato caricamento */
+#loadingStatus {
+    font-size: 14px;
+    color: #ffffff;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; /* Impedisce il wrapping del testo */
+    overflow: hidden; /* Nasconde il testo in eccesso */
+    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione se il testo è troppo lungo */
+}
+
+/* Aggiunto per centrare l'immagine di caricamento */
+#loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Stile per il messaggio personale sulla homepage */
+#personalMessage {
+    display: block; /* Visibile di default */
+    text-align: center;
+    padding: 15px 10px;
+    color: #a8ff60; /* Colore verde "Game Boy" chiaro */
+    font-family: 'Press Start 2P', cursive; /* Font principale del gioco */
+    font-size: 10px; /* Leggermente più piccolo per discrezione */
+    line-height: 1.6; /* Migliore leggibilità per testo multiriga */
+    width: 90%; /* Larghezza relativa */
+    max-width: 550px; /* Larghezza massima per allinearsi con il contenuto principale */
+    margin-top: 20px; /* Margine superiore */
+    margin-bottom: 15px; /* Margine inferiore, prima di #startScreen */
+    /* margin-left: auto; e margin-right: auto; rimossi, la centratura è gestita da flex su body */
+    border: 2px solid #a8ff60; /* Bordo sottile per integrarlo meglio */
+    border-radius: 5px; /* Angoli arrotondati */
+    background-color: rgba(15, 56, 15, 0.5); /* Sfondo leggermente trasparente del colore base */
+}
+
+/* 
+  Nascondi il messaggio personale quando una delle altre schermate principali è attiva.
+  Questo sfrutta il selettore :has() per verificare lo stile 'display' delle altre schermate.
+  interstellarContainer è aggiunto dinamicamente da interstellar.js.
+*/
+body:has(#gameScreen[style*="display: flex"]) #personalMessage,
+body:has(#gameScreen[style*="display: block"]) #personalMessage,
+body:has(#factsScreen[style*="display: flex"]) #personalMessage,
+body:has(#factsScreen[style*="display: block"]) #personalMessage,
+body:has(#gameOver[style*="display: flex"]) #personalMessage,
+body:has(#gameOver[style*="display: block"]) #personalMessage,
+body:has(#interstellarContainer[style*="display: flex"]) #personalMessage,
+body:has(#interstellarContainer[style*="display: block"]) #personalMessage {
+    display: none !important; /* Nascondi il messaggio */
+}
+
+/* Stili per il contenitore principale dell'app */
+#appContainer {
+    width: 100%;
+    max-width: 800px; /* Larghezza massima per il contenitore principale */
+    margin: 0 auto; /* Centra orizzontalmente */
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Per posizionamento assoluto di elementi interni se necessario */
+    box-sizing: border-box;
+}
+
+/* Header */
+header {
+    width: 100%;
+    padding: 10px 0;
+    background-color: rgba(15, 56, 15, 0.8); /* Verde traslucido */
+    color: #a8ff60;
+    text-align: center;
+    position: relative; /* Per posizionamento assoluto di elementi interni se necessario */
+    z-index: 100; /* Sopra altri contenuti ma sotto le modali */
+    border-bottom: 2px solid #a8ff60; /* Bordo inferiore */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+header h1 {
+    font-size: 24px;
+    margin: 0;
+    font-family: 'Press Start 2P', cursive;
+}
+
+/* Pulsante Menu (hamburger) */
+.menu-toggle {
+    display: none; /* Nascosto di default, mostrato su schermi piccoli */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 200; /* Sopra il contenuto ma sotto le modali */
+}
+
+.menu-toggle div {
+    width: 100%;
+    height: 4px;
+    background-color: #a8ff60;
+    margin: 3px 0;
+    transition: all 0.3s ease;
+}
+
+/* Mostra l'icona X quando attivo */
+.menu-toggle.active div:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+.menu-toggle.active div:nth-child(2) {
+    opacity: 0;
+}
+.menu-toggle.active div:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Menu laterale */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -250px; /* Nascondi a destra */
+    width: 250px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.7);
+    transition: right 0.3s ease;
+    z-index: 150; /* Sopra il contenuto ma sotto le modali */
+}
+
+/* Mostra il menu quando attivo */
+.side-menu.active {
+    right: 0;
+}
+
+.side-menu h2 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
+    color: #a8ff60;
+}
+
+/* Link del menu */
+.side-menu a {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    color: #a8ff60;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.side-menu a:hover {
+    background-color: #a8ff60;
+    color: #0f380f;
+}
+
+/* Contenitore principale del gioco */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Stili per il punteggio e il timer */
+.score-timer-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.score-timer-container div {
+    flex-basis: 48%; /* Circa metà dello spazio disponibile */
+    text-align: center;
+}
+
+/* Stili per il grafico del punteggio */
+#scoreChart {
+    width: 100%;
+    max-width: 800px;
+    height: 300px; /* Altezza fissa per il grafico */
+    margin: 20px 0;
+}
+
+/* Stili per la schermata di caricamento */
+#loadingScreen {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10000; /* Sopra tutto */
+}
+
+/* Aggiunta di stili per il caricamento delle immagini */
+#imageLoadingContainer {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 4px solid #a8ff60;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    box-shadow: 0 0 15px #a8ff60, 0 0 30px #a8ff60;
+    opacity: 0.9;
+}
+
+#imageLoadingContainer h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #a8ff60;
+    text-align: center;
+}
+
+#imageLoadingContainer p {
+    font-size: 14px;
+    margin: 0;
+    color: #ffffff;
+    text-align: center;
+}
+
+#imageProgressBar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+    width: 100%;
+}
+
+#imageProgressBar div {
+    height: 100%;
+    background-color: #a8ff60;
+    transition: width 0.4s ease;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Animazione per il caricamento delle immagini */
+@keyframes imageLoadingAnim {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+
+#imageProgressBar div {
+    animation: imageLoadingAnim 2s ease-in-out forwards;
+}
+
+/* Aggiunto per il testo di stato caricamento immagini */
+#imageLoadingStatus {
+    font-size: 14px;
+    color: #ffffff;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; /* Impedisce il wrapping del testo */
+    overflow: hidden; /* Nasconde il testo in eccesso */
+    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione se il testo è troppo lungo */
+}
+
+/* Aggiunto per centrare l'immagine di caricamento */
+#imageLoadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Stili per la schermata di Game Over in Interstellar */
+#interstellarGameOver {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10000; /* Sopra tutto */
+}
+
+/* Immagine di sfondo per Game Over in Interstellar */
+#interstellarGameOverImage {
+    display: block;
+    margin: 0 auto 20px auto; /* Centra orizzontalmente e spazio sotto */
+    max-width: 90%; /* Limita larghezza massima */
+    height: auto; /* Mantiene proporzioni */
+    object-fit: contain; /* Assicura che si adatti senza distorsioni */
+}
+
+/* Pulsante per riavviare il gioco in Game Over Interstellar */
+#restartInterstellar {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #a8ff60;
+    color: #0f380f;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: 'Press Start 2P', cursive;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#restartInterstellar:hover {
+    background-color: #0f380f;
+    color: #a8ff60;
+}
+
 /* Stili specifici per la modalità Interstellar */
 
 #interstellarCanvas {
@@ -1325,4 +1772,506 @@ h2 { /* Esempio sottotitolo */
     background-color: #a8ff60; /* Thumb LIME */
     border-radius: 4px;
     border: 2px solid #222; /* Bordo DARK GRAY (#222) */
+}
+
+#loading-image {
+    width: 100px; /* O la dimensione che hai impostato */
+    height: 100px; /* O la dimensione che hai impostato */
+    margin-bottom: 20px;
+    image-rendering: pixelated;
+    animation: spin 2s linear infinite; /* AGGIUNTA ANIMAZIONE */
+}
+
+/* AGGIUNTA KEYFRAMES PER L'ANIMAZIONE */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+#loadingProgressContainer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 4px solid #a8ff60;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    box-shadow: 0 0 15px #a8ff60, 0 0 30px #a8ff60;
+    opacity: 0.9;
+}
+
+#loadingProgressContainer h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #a8ff60;
+    text-align: center;
+}
+
+#loadingProgressContainer p {
+    font-size: 14px;
+    margin: 0;
+    color: #ffffff;
+    text-align: center;
+}
+
+#progressBar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+    width: 100%;
+}
+
+#progressBar div {
+    height: 100%;
+    background-color: #a8ff60;
+    transition: width 0.4s ease;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Animazione per il caricamento */
+@keyframes loadingAnim {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+
+#progressBar div {
+    animation: loadingAnim 2s ease-in-out forwards;
+}
+
+/* Aggiunto per il testo di stato caricamento */
+#loadingStatus {
+    font-size: 14px;
+    color: #ffffff;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; /* Impedisce il wrapping del testo */
+    overflow: hidden; /* Nasconde il testo in eccesso */
+    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione se il testo è troppo lungo */
+}
+
+/* Aggiunto per centrare l'immagine di caricamento */
+#loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Stile per il messaggio personale sulla homepage */
+#personalMessage {
+    display: block; /* Visibile di default */
+    text-align: center;
+    padding: 15px 10px;
+    color: #a8ff60; /* Colore verde "Game Boy" chiaro */
+    font-family: 'Press Start 2P', cursive; /* Font principale del gioco */
+    font-size: 10px; /* Leggermente più piccolo per discrezione */
+    line-height: 1.6; /* Migliore leggibilità per testo multiriga */
+    width: 90%; /* Larghezza relativa */
+    max-width: 550px; /* Larghezza massima per allinearsi con il contenuto principale */
+    margin-top: 20px; /* Margine superiore */
+    margin-bottom: 15px; /* Margine inferiore, prima di #startScreen */
+    /* margin-left: auto; e margin-right: auto; rimossi, la centratura è gestita da flex su body */
+    border: 2px solid #a8ff60; /* Bordo sottile per integrarlo meglio */
+    border-radius: 5px; /* Angoli arrotondati */
+    background-color: rgba(15, 56, 15, 0.5); /* Sfondo leggermente trasparente del colore base */
+}
+
+/* 
+  Nascondi il messaggio personale quando una delle altre schermate principali è attiva.
+  Questo sfrutta il selettore :has() per verificare lo stile 'display' delle altre schermate.
+  interstellarContainer è aggiunto dinamicamente da interstellar.js.
+*/
+body:has(#gameScreen[style*="display: flex"]) #personalMessage,
+body:has(#gameScreen[style*="display: block"]) #personalMessage,
+body:has(#factsScreen[style*="display: flex"]) #personalMessage,
+body:has(#factsScreen[style*="display: block"]) #personalMessage,
+body:has(#gameOver[style*="display: flex"]) #personalMessage,
+body:has(#gameOver[style*="display: block"]) #personalMessage,
+body:has(#interstellarContainer[style*="display: flex"]) #personalMessage,
+body:has(#interstellarContainer[style*="display: block"]) #personalMessage {
+    display: none !important; /* Nascondi il messaggio */
+}
+
+/* Stili per il contenitore principale dell'app */
+#appContainer {
+    width: 100%;
+    max-width: 800px; /* Larghezza massima per il contenitore principale */
+    margin: 0 auto; /* Centra orizzontalmente */
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative; /* Per posizionamento assoluto di elementi interni se necessario */
+    box-sizing: border-box;
+}
+
+/* Header */
+header {
+    width: 100%;
+    padding: 10px 0;
+    background-color: rgba(15, 56, 15, 0.8); /* Verde traslucido */
+    color: #a8ff60;
+    text-align: center;
+    position: relative; /* Per posizionamento assoluto di elementi interni se necessario */
+    z-index: 100; /* Sopra altri contenuti ma sotto le modali */
+    border-bottom: 2px solid #a8ff60; /* Bordo inferiore */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+header h1 {
+    font-size: 24px;
+    margin: 0;
+    font-family: 'Press Start 2P', cursive;
+}
+
+/* Pulsante Menu (hamburger) */
+.menu-toggle {
+    display: none; /* Nascosto di default, mostrato su schermi piccoli */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 200; /* Sopra il contenuto ma sotto le modali */
+}
+
+.menu-toggle div {
+    width: 100%;
+    height: 4px;
+    background-color: #a8ff60;
+    margin: 3px 0;
+    transition: all 0.3s ease;
+}
+
+/* Mostra l'icona X quando attivo */
+.menu-toggle.active div:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+.menu-toggle.active div:nth-child(2) {
+    opacity: 0;
+}
+.menu-toggle.active div:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+/* Menu laterale */
+.side-menu {
+    position: fixed;
+    top: 0;
+    right: -250px; /* Nascondi a destra */
+    width: 250px;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    padding: 20px;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.7);
+    transition: right 0.3s ease;
+    z-index: 150; /* Sopra il contenuto ma sotto le modali */
+}
+
+/* Mostra il menu quando attivo */
+.side-menu.active {
+    right: 0;
+}
+
+.side-menu h2 {
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: 'Press Start 2P', cursive;
+    color: #a8ff60;
+}
+
+/* Link del menu */
+.side-menu a {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    color: #a8ff60;
+    text-decoration: none;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.side-menu a:hover {
+    background-color: #a8ff60;
+    color: #0f380f;
+}
+
+/* Contenitore principale del gioco */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* Stili per il punteggio e il timer */
+.score-timer-container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 800px;
+    margin-bottom: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.score-timer-container div {
+    flex-basis: 48%; /* Circa metà dello spazio disponibile */
+    text-align: center;
+}
+
+/* Stili per il grafico del punteggio */
+#scoreChart {
+    width: 100%;
+    max-width: 800px;
+    height: 300px; /* Altezza fissa per il grafico */
+    margin: 20px 0;
+}
+
+/* Stili per la schermata di caricamento */
+#loadingScreen {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10000; /* Sopra tutto */
+}
+
+/* Aggiunta di stili per il caricamento delle immagini */
+#imageLoadingContainer {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    max-width: 400px;
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 4px solid #a8ff60;
+    padding: 20px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    box-shadow: 0 0 15px #a8ff60, 0 0 30px #a8ff60;
+    opacity: 0.9;
+}
+
+#imageLoadingContainer h2 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #a8ff60;
+    text-align: center;
+}
+
+#imageLoadingContainer p {
+    font-size: 14px;
+    margin: 0;
+    color: #ffffff;
+    text-align: center;
+}
+
+#imageProgressBar {
+    width: 100%;
+    height: 10px;
+    background-color: #333;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-top: 10px;
+    position: relative;
+    width: 100%;
+}
+
+#imageProgressBar div {
+    height: 100%;
+    background-color: #a8ff60;
+    transition: width 0.4s ease;
+    border-radius: 5px;
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Animazione per il caricamento delle immagini */
+@keyframes imageLoadingAnim {
+    0% { transform: scaleX(0); }
+    100% { transform: scaleX(1); }
+}
+
+#imageProgressBar div {
+    animation: imageLoadingAnim 2s ease-in-out forwards;
+}
+
+/* Aggiunto per il testo di stato caricamento immagini */
+#imageLoadingStatus {
+    font-size: 14px;
+    color: #ffffff;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    white-space: nowrap; /* Impedisce il wrapping del testo */
+    overflow: hidden; /* Nasconde il testo in eccesso */
+    text-overflow: ellipsis; /* Aggiunge i puntini di sospensione se il testo è troppo lungo */
+}
+
+/* Aggiunto per centrare l'immagine di caricamento */
+#imageLoadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Stili per la schermata di Game Over in Interstellar */
+#interstellarGameOver {
+    display: none; /* Nascosto di default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #a8ff60;
+    text-align: center;
+    padding: 20px;
+    box-sizing: border-box;
+    z-index: 10000; /* Sopra tutto */
+}
+
+/* Immagine di sfondo per Game Over in Interstellar */
+#interstellarGameOverImage {
+    display: block;
+    margin: 0 auto 20px auto; /* Centra orizzontalmente e spazio sotto */
+    max-width: 90%; /* Limita larghezza massima */
+    height: auto; /* Mantiene proporzioni */
+    object-fit: contain; /* Assicura che si adatti senza distorsioni */
+}
+
+/* Pulsante per riavviare il gioco in Game Over Interstellar */
+#restartInterstellar {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #a8ff60;
+    color: #0f380f;
+    text-decoration: none;
+    border-radius: 5px;
+    font-family: 'Press Start 2P', cursive;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#restartInterstellar:hover {
+    background-color: #0f380f;
+    color: #a8ff60;
+}
+
+/* Stili specifici per la modalità Interstellar */
+
+#interstellarCanvas {
+    display: block; /* Evita spazi extra sotto il canvas */
+    /* Mantieni gli stili inline o spostali qui se preferisci */
+    border: 4px solid #FFFFFF; /* OK */
+    border-radius: 5px; /* OK */
+    background-color: black; /* OK */
+    image-rendering: pixelated; /* OK: Mantiene stile pixel art */
+    image-rendering: crisp-edges; /* OK: Alternativa */
+    margin: 0 auto; /* OK: Centra il canvas se il contenitore è più largo di 800px */
+    /* Assicurati che le dimensioni fisse siano impostate nell'HTML/JS (width="800" height="600") */
+}
+
+/* Stili specifici per l'immagine nella schermata Game Over di Interstellar */
+#interstellarGameOverImage {
+    /* Contenitore per l'immagine (es. explosion, lost, planet) */
+    width: 100%; /* Occupa lo spazio disponibile nel suo contenitore (.game-over-content) */
+    text-align: center; /* Centra l'immagine se è inline-block o block con margin auto */
+    margin-bottom: 20px; /* Spazio sotto l'immagine, come definito in JS */
+}
+
+#interstellarGameOverImage img {
+    /* Regola FONDAMENTALE per limitare la dimensione dell'immagine */
+    display: block; /* Comportamento a blocco per usare margin auto */
+    margin-left: auto;  /* Centra l'immagine orizzontalmente */
+    margin-right: auto; /* Centra l'immagine orizzontalmente */
+    max-width: 150px;  /* Imposta una larghezza massima (REGOLA QUESTO VALORE!) */
+    max-height: 150px; /* Imposta un'altezza massima (REGOLA QUESTO VALORE!) */
+    width: auto;       /* Mantiene le proporzioni originali */
+    height: auto;      /* Mantiene le proporzioni originali */
+    object-fit: contain; /* Assicura che l'immagine si adatti senza distorsioni */
+    animation: subtleBobbing 1.8s ease-in-out infinite; /* AGGIUNTA ANIMAZIONE */
+}
+
+/* Stili specifici per la modale Interstellar per matchare Eco Log */
+#interstellar-window {
+    background-color: #000000; /* Sfondo NERO pieno */
+    border: 4px solid #a8ff60; /* Bordo verde esterno */
+    padding: 20px; /* Aggiungi padding qui per spazio interno */
+    box-shadow: 0 0 10px #a8ff60; /* Manteniamo glow */
+}
+
+/* Sovrascrivi gli stili del riquadro interno .retro-border SOLO dentro #interstellar-window */
+#interstellar-window .retro-border {
+    border: none; /* Rimuovi il bordo interno */
+    padding: 0; /* Rimuovi il padding interno */
+    background-color: transparent; /* Assicura sfondo trasparente */
+    animation: none; /* Rimuovi animazione bordo se presente */
+    box-shadow: none; /* Rimuovi ombre se presenti */
+}
+
+/* Assicura che il contenuto interno non abbia padding/background indesiderati */
+#interstellar-window .retro-content {
+     padding: 0; /* Rimuovi padding se gestito da #interstellar-window */
+     background-color: transparent; /* Assicura sfondo trasparente */
 }

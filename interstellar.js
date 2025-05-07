@@ -46,8 +46,10 @@ console.log('Modulo interstellar.js caricato correttamente.');
     // Define constants for the Xenomorph
     const XENOMORPH_IMAGE = 'assets/images/xenomorph.png';
     const XENOMORPH_AUDIO = 'assets/audio/xenomorph.wav';
-    const XENOMORPH_DURATION = 3000; // 3 seconds
+    const XENOMORPH_DURATION = 3000; // 3 seconds for speed reduction
     const XENOMORPH_SPEED = 500; // Adjusted speed for Xenomorph
+    const XENOMORPH_BLUR_INTENSITY = '15px'; // Increased blur intensity for Xenomorph
+    const XENOMORPH_BLUR_DURATION = 5000; // Duration for the Xenomorph blur effect
 
     // Define constants for the Laser Gun
     const LASER_GUN_IMAGE_PATH = 'assets/images/laser.png';
@@ -720,28 +722,36 @@ console.log('Modulo interstellar.js caricato correttamente.');
                 spawnLaserGun();
                 isFirstSpecialItemSpawnThisGame = false;
             } else {
-                // Logica di spawn probabilistica esistente
+                // Logica di spawn probabilistica con probabilità aggiustate
                 const specialItemRoll = Math.random();
-                if (specialItemRoll < 0.15) { // 15%
+                // Probabilità normalizzate:
+                // GS: ~11.5%
+                // AL: ~23.1% (raddoppiata rispetto a GS)
+                // TC: ~11.5%
+                // PS: ~11.5%
+                // XN: ~23.1% (raddoppiata rispetto a GS)
+                // LG: ~7.7%
+                // NO: ~11.6%
+                if (specialItemRoll < 0.115) { // Era 0.15 per Gravity Shifter
                     console.log('Generazione: Gravity Shifter');
                     spawnGravityShifter();
-                } else if (specialItemRoll < 0.30) { // 15%
+                } else if (specialItemRoll < 0.346) { // Era 0.30 per Alien Larva (0.115 + 0.231)
                     console.log('Generazione: Alien Larva');
                     spawnAlienLarva();
-                } else if (specialItemRoll < 0.45) { // 15%
+                } else if (specialItemRoll < 0.461) { // Era 0.45 per Telepathic Core (0.346 + 0.115)
                     console.log('Generazione: Telepathic Core');
                     spawnTelepathicCore();
-                } else if (specialItemRoll < 0.60) { // 15%
+                } else if (specialItemRoll < 0.576) { // Era 0.60 per Protective Shield (0.461 + 0.115)
                     console.log('Generazione: Protective Shield');
                     spawnProtectiveShield();
-                } else if (specialItemRoll < 0.75) { // 15%
+                } else if (specialItemRoll < 0.807) { // Era 0.75 per Xenomorph (0.576 + 0.231)
                     console.log('Generazione: Xenomorph');
                     spawnXenomorph();
-                } else if (specialItemRoll < 0.85) { // 10% - Il Laser Gun può ancora apparire probabilisticamente
+                } else if (specialItemRoll < 0.884) { // Era 0.85 per Laser Gun (0.807 + 0.077)
                     console.log('Generazione: Laser Gun (probabilistico)');
                     spawnLaserGun();
                 } else {
-                    // 15% di probabilità che non spawni nulla di speciale in questo ciclo
+                    // Il resto (~11.6%) è la probabilità che non spawni nulla di speciale
                     console.log('Nessun oggetto speciale generato in questo ciclo (probabilistico).');
                 }
             }
@@ -859,16 +869,26 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     xenomorphAudio.currentTime = 0;
                     xenomorphAudio.play().catch(e => console.error('Error playing Xenomorph sound:', e));
 
-                    blurScreen(); // Reuse the blur effect from Alien Larva
+                    // Apply Xenomorph specific blur
+                    console.log(`Applying Xenomorph blur effect: ${XENOMORPH_BLUR_INTENSITY} for ${XENOMORPH_BLUR_DURATION}ms`);
+                    canvas.style.filter = `blur(${XENOMORPH_BLUR_INTENSITY})`;
+                    setTimeout(() => {
+                        console.log('Xenomorph blur effect removed!');
+                        // Only remove the blur if it's still the Xenomorph blur.
+                        // This prevents overriding another blur effect that might have started.
+                        if (canvas.style.filter === `blur(${XENOMORPH_BLUR_INTENSITY})`) {
+                           canvas.style.filter = 'none';
+                        }
+                    }, XENOMORPH_BLUR_DURATION);
 
                     // Apply speed reduction safely
                     if (cartSpeedModifier === 1) {
-                        cartSpeedModifier = 0.5; // Reduce speed by 50%
+                        cartSpeedModifier = 0.25; // Reduce speed to 25% (era 0.5)
 
                         setTimeout(() => {
                             console.log('Cart speed restored!');
                             cartSpeedModifier = 1; // Restore original speed
-                        }, XENOMORPH_DURATION);
+                        }, XENOMORPH_DURATION); // Speed reduction duration
                     }
 
                     return true; // Item collected, remove it
@@ -887,19 +907,18 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
         // Increase fuel level when collecting a fuel item
         function increaseFuel(fuelValue, fuelTypeName) {
-            console.log(`Increasing fuel by ${fuelValue}`);
+            // Aggiungiamo un log per debugging
+            console.log(`[increaseFuel] Called. Type: "${fuelTypeName}", Value: ${fuelValue}, Current fuelLevel: ${fuelLevel}, FUEL_MAX_LEVEL: ${FUEL_MAX_LEVEL}`);
             
-            // If the fuel type is "Fusion Drop", set the fuel level to maximum
             if (fuelTypeName === 'Fusion Drop') {
-                fuelLevel = FUEL_MAX_LEVEL;
-                console.log('Fusion Drop collected! Fuel bar is now full.');
+                fuelLevel = FUEL_MAX_LEVEL; // Imposta il carburante al massimo definito (10)
+                console.log(`[increaseFuel] Fusion Drop collected! fuelLevel set to MAX: ${fuelLevel}`);
             } else {
-                // Otherwise, increment the fuel level by the fuel value
                 fuelLevel = Math.min(fuelLevel + fuelValue, FUEL_MAX_LEVEL);
+                console.log(`[increaseFuel] Other fuel type. New fuelLevel: ${fuelLevel}`);
             }
 
-            // Update the fuel bar display
-            updateFuelDisplay();
+            updateFuelDisplay(); // Aggiorna la barra del carburante
 
             // Play recharge sound with cooldown
             if (!rechargeSoundCooldown) {
@@ -1228,7 +1247,7 @@ console.log('Modulo interstellar.js caricato correttamente.');
             // Remove shield visual effect immediately
             canvas.style.boxShadow = 'none';
             
-            // Cancel animation frame
+            //
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
                 animationFrameId = null;
@@ -1341,6 +1360,8 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
             // Reset shield visual effect
             canvas.style.boxShadow = 'none';
+            // Reset any blur effect on the canvas
+            canvas.style.filter = 'none'; // <--- AGGIUNTO: Rimuove l'effetto blur
             
             // Reset game variables
             gameRunning = true;
