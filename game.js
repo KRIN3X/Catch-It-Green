@@ -7,8 +7,8 @@ const CART_WIDTH = 160; // Doubled from 80
 const CART_HEIGHT = 100; // Doubled from 50
 const ITEM_SIZE = 100; // Doubled from 50
 const TARGET_FPS = 60; // Target frames per second for delta time normalization
-const CART_COLLISION_SURFACE_HEIGHT = 15; // Altezza in pixel della superficie di collisione superiore del carrello.
-const CART_COLLISION_HORIZONTAL_PADDING = 20; // Padding orizzontale per lato per la collisione del carrello.
+const CART_COLLISION_SURFACE_HEIGHT = 30; // Altezza in pixel della superficie di collisione superiore del carrello.
+const CART_COLLISION_HORIZONTAL_PADDING = 5; // Padding orizzontale per lato per la collisione del carrello.
 
 // Sound manager for improved audio handling, especially on mobile
 let soundManager = {
@@ -1351,27 +1351,32 @@ function checkCollision(item) {
         return false;
     }
 
-    // Item properties (assuming item.x, item.y are top-left corner)
+    // Item properties (Axis-Aligned Bounding Box - AABB)
     const itemLeft = item.x;
-    const itemRight = item.x + ITEM_SIZE; // ITEM_SIZE is the width of the item
+    const itemRight = item.x + ITEM_SIZE;
     const itemTop = item.y;
-    const itemBottom = item.y + ITEM_SIZE; // ITEM_SIZE is the height of the item
+    const itemBottom = item.y + ITEM_SIZE;
 
-    // Cart properties with collision padding
-    const cartEffectiveLeft = cartX + CART_COLLISION_HORIZONTAL_PADDING;
-    const cartEffectiveRight = cartX + CART_WIDTH - CART_COLLISION_HORIZONTAL_PADDING;
-    const cartTopSurfaceY = cartY; // Y-coordinate of the cart's top surface
-    const cartCollisionZoneBottomY = cartY + CART_COLLISION_SURFACE_HEIGHT; // Lower Y-limit of the top collision zone
+    // Cart properties (AABB)
+    // The cart's collision area is defined by its visual top edge,
+    // extending downwards by CART_COLLISION_SURFACE_HEIGHT,
+    // and inwards horizontally by CART_COLLISION_HORIZONTAL_PADDING.
 
-    // 1. Precise horizontal collision check with padding:
-    const horizontalMatch = itemRight > cartEffectiveLeft && itemLeft < cartEffectiveRight;
+    const cartCollisionBoxLeft = cartX + CART_COLLISION_HORIZONTAL_PADDING;
+    const cartCollisionBoxRight = cartX + CART_WIDTH - CART_COLLISION_HORIZONTAL_PADDING;
+    const cartCollisionBoxTop = cartY; // The visual top of the cart
+    const cartCollisionBoxBottom = cartY + CART_COLLISION_SURFACE_HEIGHT; // The "depth" of the catchable surface
 
-    // 2. Vertical collision check on the cart's top surface:
-    const verticalMatchOnTopSurface = itemBottom >= cartTopSurfaceY &&
-                                      itemBottom <= cartCollisionZoneBottomY &&
-                                      itemTop < cartCollisionZoneBottomY;
+    // Standard AABB collision detection logic:
+    // Check for overlap on both X and Y axes.
+    // An overlap exists if one object's min is less than the other's max,
+    // AND one object's max is greater than the other's min.
 
-    const isColliding = horizontalMatch && verticalMatchOnTopSurface;
+    const horizontalOverlap = itemLeft < cartCollisionBoxRight && itemRight > cartCollisionBoxLeft;
+    const verticalOverlap = itemTop < cartCollisionBoxBottom && itemBottom > cartCollisionBoxTop;
+
+    // A collision occurs if there's an overlap on both axes.
+    const isColliding = horizontalOverlap && verticalOverlap;
 
     return isColliding;
 }
@@ -1448,14 +1453,17 @@ gameItems.forEach(item => {
 // Draw points animations
 function drawPointsAnimations() {
     pointsAnimations.forEach(animation => {
-        // Set font properties
-        ctx.font = 'bold 24px Arial';
+        // Set font properties - AUMENTATA DIMENSIONE E CAMBIATO FONT
+        ctx.font = 'bold 30px "Press Start 2P", cursive'; // Aumentato da 24px Arial a 30px "Press Start 2P"
         ctx.textAlign = 'center';
         
         if (animation.isText) {
             // For text messages (Easter Eggs)
             // Use custom color if provided, otherwise determine based on content
-            const color = animation.color || (animation.points.includes('+') ? '#4CAF50' : '#F44336'); // Green for positive, red for negative
+            // COLORI PIÙ VIVACI PER I TESTI DI DEFAULT
+            const defaultPositiveColor = '#39FF14'; // Verde Neon
+            const defaultNegativeColor = '#FF3131'; // Rosso Brillante
+            const color = animation.color || (animation.points.includes('+') || animation.points.toLowerCase().includes('seconds') || animation.points.toLowerCase().includes('slowed') || animation.points.toLowerCase().includes('faster') || animation.points.toLowerCase().includes('double double') ? defaultPositiveColor : defaultNegativeColor);
             
             // Set color with opacity for fade-out effect
             ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${animation.opacity})`;
@@ -1464,8 +1472,8 @@ function drawPointsAnimations() {
             ctx.fillText(animation.points, animation.x, animation.y);
         } else {
             // For regular point animations
-            // Determine color based on points value
-            const color = animation.points >= 0 ? '#4CAF50' : '#F44336'; // Green for positive, red for negative
+            // Determine color based on points value - COLORI PIÙ VIVACI
+            const color = animation.points >= 0 ? '#39FF14' : '#FF3131'; // Verde Neon per positivo, Rosso Brillante per negativo
             
             // Set color with opacity for fade-out effect
             ctx.fillStyle = `rgba(${parseInt(color.slice(1, 3), 16)}, ${parseInt(color.slice(3, 5), 16)}, ${parseInt(color.slice(5, 7), 16)}, ${animation.opacity})`;

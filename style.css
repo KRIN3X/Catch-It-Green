@@ -175,6 +175,29 @@ body {
     }
 }
 
+/* Animazione pulsante per Shopping List */
+@keyframes pulseEffect {
+    0% {
+        transform: scale(1);
+        box-shadow: 3px 3px 0px #a8ff60; /* Ombra base del .retro-button */
+    }
+    50% {
+        transform: scale(1.05); /* Leggero ingrandimento */
+        box-shadow: 4px 4px 0px #beff80; /* Ombra leggermente più grande e chiara */
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 3px 3px 0px #a8ff60; /* Ritorna all'ombra base */
+    }
+}
+
+#shopping-list-btn {
+    animation-name: pulseEffect;
+    animation-duration: 1.5s; /* Durata dell'animazione */
+    animation-timing-function: ease-in-out; /* Andamento morbido */
+    animation-iteration-count: infinite; /* Ripeti all'infinito */
+}
+
 /* Stili aggiuntivi per titoli/sottotitoli se necessario */
 h1 { /* Esempio titolo */
     font-size: 24px;
@@ -1144,7 +1167,7 @@ h2 { /* Esempio sottotitolo */
     font-size: 1.1em;
     text-align: left;
 
-    border-top: 1px dashed #a8ff60;    /* Linea sopra per tutti */
+    border-top:  1px dashed #a8ff60;    /* Linea sopra per tutti */
     border-bottom: 1px dashed #a8ff60; /* Linea sotto per tutti */
 
     padding-top: 10px;    /* Spazio tra linea sopra e testo */
@@ -1671,7 +1694,21 @@ header h1 {
     animation: subtleBobbing 1.8s ease-in-out infinite; /* AGGIUNTA ANIMAZIONE */
 }
 
-/* Stili specifici per la modale Interstellar per matchare Eco Log */
+/* NUOVA REGOLA: Stile per il feedback testuale dei punti carburante in Interstellar */
+.interstellar-fuel-points-text {
+    font-family: 'Press Start 2P', monospace; /* Font principale del gioco */
+    font-size: 16px; /* AUMENTATO - per feedback visivo immediato */
+    color: #a8ff60; /* Colore standard per feedback positivi */
+    /* font-weight: bold; RIMOSSO - i testi fluttuanti spesso non sono bold */
+    position: absolute; 
+    z-index: 1500;      
+    pointer-events: none; 
+    /* text-shadow: 1px 1px 1px rgba(0,0,0,0.7); RIMOSSO - per semplicità e coerenza se assente nell'altro testo fluttuante */
+    /* Il tempo di permanenza e le animazioni (es. salire e svanire)
+       sono gestiti da JavaScript. */
+}
+
+/* Stili per la modale Interstellar per matchare Eco Log */
 #interstellar-window {
     background-color: #000000; /* Sfondo NERO pieno */
     border: 4px solid #a8ff60; /* Bordo verde esterno */
@@ -1723,10 +1760,10 @@ header h1 {
 .facts-container > h3 {
     background-color: transparent !important;
     color: #a8ff60;
-    font-size: 1.1em;
+    font-size:   1.1em;
     text-align: left;
 
-    border-top: 1px dashed #a8ff60;    /* Linea sopra per tutti */
+    border-top:  1px dashed #a8ff60;    /* Linea sopra per tutti */
     border-bottom: 1px dashed #a8ff60; /* Linea sotto per tutti */
 
     padding-top: 10px;    /* Spazio tra linea sopra e testo */
@@ -2253,7 +2290,21 @@ header h1 {
     animation: subtleBobbing 1.8s ease-in-out infinite; /* AGGIUNTA ANIMAZIONE */
 }
 
-/* Stili specifici per la modale Interstellar per matchare Eco Log */
+/* NUOVA REGOLA: Stile per il feedback testuale dei punti carburante in Interstellar */
+.interstellar-fuel-points-text {
+    font-family: 'Press Start 2P', monospace; /* Font principale del gioco */
+    font-size: 16px; /* AUMENTATO - per feedback visivo immediato */
+    color: #a8ff60; /* Colore standard per feedback positivi */
+    /* font-weight: bold; RIMOSSO - i testi fluttuanti spesso non sono bold */
+    position: absolute; 
+    z-index: 1500;      
+    pointer-events: none; 
+    /* text-shadow: 1px 1px 1px rgba(0,0,0,0.7); RIMOSSO - per semplicità e coerenza se assente nell'altro testo fluttuante */
+    /* Il tempo di permanenza e le animazioni (es. salire e svanire)
+       sono gestiti da JavaScript. */
+}
+
+/* Stili per la modale Interstellar per matchare Eco Log */
 #interstellar-window {
     background-color: #000000; /* Sfondo NERO pieno */
     border: 4px solid #a8ff60; /* Bordo verde esterno */

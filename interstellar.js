@@ -138,6 +138,11 @@ console.log('Modulo interstellar.js caricato correttamente.');
     const planetImage = new Image();
     planetImage.src = 'assets/images/planet.png';
 
+    // NUOVA DEFINIZIONE PER IL SUONO DI RACCOLTA CARBURANTE INTERSTELLARE
+    const interstellarFuelCollectSound = new Audio('assets/audio/recharge.wav'); // Utilizza recharge.wav come richiesto
+    interstellarFuelCollectSound.preload = 'auto'; // Opzionale: suggerisce al browser di precaricare l'audio
+
+
     // Make the function globally available
     window.startInterstellarMode = function() {
         console.log('startInterstellarMode function called');
@@ -800,7 +805,9 @@ console.log('Modulo interstellar.js caricato correttamente.');
                         y: item.y,
                         image: debrisImage,
                         size: item.isSmall ? INTERSTELLAR_SMALL_ASTEROID_SIZE : INTERSTELLAR_ITEM_SIZE, // Use original asteroid size
-                        expiration: performance.now() + 500 // Show debris for 0.5 seconds
+                        // expiration: performance.now() + 500 // Show debris for 0.5 seconds // COMMENTATO
+                        createdAt: Date.now(), // USARE createdAt COME GLI ALTRI EFFETTI
+                        duration: 500 // USARE duration COME GLI ALTRI EFFETTI
                     });
 
                     // Remove the original asteroid by returning true, but don't trigger game over
@@ -816,16 +823,36 @@ console.log('Modulo interstellar.js caricato correttamente.');
                 // Handle fuel collection
                 if (item.isFuel && !item.counted) {
                     console.log(`Collected fuel item: ${item.type.name}, value: ${item.type.fuelValue}`);
+                    
+                    // RIPRODUZIONE SUONO RACCOLTA CARBURANTE - MODIFICATA
+                    // if (interstellarFuelCollectSound) { // VECCHIA LOGICA COMMENTATA
+                    // interstellarFuelCollectSound.currentTime = 0; // Fondamentale per la riproduzione rapida
+                    // interstellarFuelCollectSound.play().catch(e => {
+                    // console.error('Interstellar: Errore durante la riproduzione del suono di raccolta carburante. Dettagli:', e, 'Stato audio:', interstellarFuelCollectSound.readyState, 'Sorgente:', interstellarFuelCollectSound.src);
+                    // });
+
+                    // NUOVA LOGICA DI RIPRODUZIONE SUONO: Crea una nuova istanza Audio ogni volta
+                    try {
+                        const fuelCollectSoundEffect = new Audio('assets/audio/recharge.wav');
+                        fuelCollectSoundEffect.play().catch(e => {
+                            console.error('Interstellar: Errore durante la riproduzione del suono di raccolta carburante (nuova istanza):', e);
+                        });
+                    } catch (e) {
+                        console.error('Interstellar: Eccezione durante la creazione/riproduzione del suono di raccolta carburante (nuova istanza):', e);
+                    }
+                    
                     increaseFuel(item.type.fuelValue, item.type.name); // Pass the fuel type name
                     item.counted = true;
 
                     // Add fuel points to display
                     fuelPointsToDisplay.push({
-                        x: item.x + INTERSTELLAR_ITEM_SIZE / 2,
+                        points: item.type.fuelValue, // Valore numerico dei punti
+                        x: item.x + INTERSTELLAR_ITEM_SIZE / 2, // O la posizione desiderata
                         y: item.y,
-                        value: `+${item.type.fuelValue}`,
-                        opacity: 1, // Start fully visible
-                        expiration: performance.now() + 1000 // Fade out over 1 second
+                        opacity: 1.0, // Opacità iniziale, gestita poi dall'animazione
+                        createdAt: Date.now(),
+                        duration: 1000,
+                        color: '#39FF14' // Colore verde neon per punti positivi
                     });
 
                     return true; // Fuel collected, remove item
@@ -908,7 +935,7 @@ console.log('Modulo interstellar.js caricato correttamente.');
         // Increase fuel level when collecting a fuel item
         function increaseFuel(fuelValue, fuelTypeName) {
             // Aggiungiamo un log per debugging
-            console.log(`[increaseFuel] Called. Type: "${fuelTypeName}", Value: ${fuelValue}, Current fuelLevel: ${fuelLevel}, FUEL_MAX_LEVEL: ${FUEL_MAX_LEVEL}`);
+            console.log(`[increaseFuel] Called. Type: \"${fuelTypeName}\", Value: ${fuelValue}, Current fuelLevel: ${fuelLevel}, FUEL_MAX_LEVEL: ${FUEL_MAX_LEVEL}`);
             
             if (fuelTypeName === 'Fusion Drop') {
                 fuelLevel = FUEL_MAX_LEVEL; // Imposta il carburante al massimo definito (10)
@@ -920,7 +947,9 @@ console.log('Modulo interstellar.js caricato correttamente.');
 
             updateFuelDisplay(); // Aggiorna la barra del carburante
 
-            // Play recharge sound with cooldown
+            // RIMOSSA la riproduzione del suono di ricarica da qui per evitare doppioni.
+            // Il suono viene ora gestito direttamente nella logica di collisione.
+            /*
             if (!rechargeSoundCooldown) {
                 try {
                     rechargeSound.pause(); // Pause the sound if it's already playing
@@ -939,6 +968,7 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     rechargeSoundCooldown = false;
                 }, 200); // 200ms cooldown
             }
+            */
         }
         
         // Update the reverseGravity function to toggle the gravity multiplier
@@ -1430,7 +1460,7 @@ console.log('Modulo interstellar.js caricato correttamente.');
         restartInterstellarGameFunction = restartInterstellarGame;
 
         // Update the drawGame function to render spawn trajectories
-        function drawGame() {
+        function drawGame(deltaTime) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             // Draw background
@@ -1469,29 +1499,74 @@ console.log('Modulo interstellar.js caricato correttamente.');
                 ctx.closePath();
             });
 
-            // Draw fuel points
-            fuelPointsToDisplay = fuelPointsToDisplay.filter(point => point.expiration > currentTime); // Remove expired points
-            fuelPointsToDisplay.forEach(point => {
-                const timeLeft = point.expiration - currentTime;
-                point.opacity = timeLeft / 1000; // Fade out over 1 second
+            // Disegna gli effetti dei detriti
+            for (let i = debrisEffects.length - 1; i >= 0; i--) {
+                const effect = debrisEffects[i];
+                const age = Date.now() - effect.createdAt;
 
-                ctx.font = 'bold 22px Arial'; // Make the font bolder and slightly larger
-                ctx.fillStyle = `rgba(0, 255, 0, ${point.opacity})`; // Green color with fading effect
+                if (age > effect.duration) {
+                    debrisEffects.splice(i, 1); // Rimuovi l'effetto se è scaduto
+                } else {
+                    // Calcola l'opacità per l'effetto fade-out (opzionale, ma carino)
+                    // const opacity = 1.0 - (age / effect.duration);
+                    // ctx.globalAlpha = opacity; // Applica opacità
+
+                    // Disegna l'immagine dei detriti
+                    ctx.drawImage(effect.image, effect.x, effect.y, effect.size, effect.size); // DECOMMENTATA
+                    // ctx.globalAlpha = 1.0; // Ripristina l'opacità globale se si usa l'opacità personalizzata
+                }
+            }
+
+            // Draw fuel points animations
+            ctx.save(); // Salva lo stato del contesto
+            const currentTimeForAnimations = Date.now();
+            for (let i = fuelPointsToDisplay.length - 1; i >= 0; i--) {
+                const animation = fuelPointsToDisplay[i];
+                const age = currentTimeForAnimations - animation.createdAt;
+                const duration = animation.duration || 1000; // Fallback per duration
+
+                if (age >= duration) {
+                    fuelPointsToDisplay.splice(i, 1); // Rimuovi animazione scaduta
+                    continue;
+                }
+
+                // Update animation properties
+                animation.opacity = 1.0 - (age / duration);
+                animation.y -= 1 * deltaTime; // VELOCITÀ CORRETTA
+
+                ctx.font = 'bold 30px "Press Start 2P", cursive';
                 ctx.textAlign = 'center';
-                ctx.fillText(point.value, point.x, point.y);
-            });
 
-            // Draw debris effects
-            const currentTimeForDebris = performance.now(); // Use a distinct name if currentTime is already defined above
-            debrisEffects = debrisEffects.filter(effect => effect.expiration > currentTimeForDebris); // Remove expired effects
-            debrisEffects.forEach(effect => {
-                const timeRemaining = effect.expiration - currentTimeForDebris;
-                const opacity = Math.max(0, timeRemaining / 500); // Fade out effect over 0.5 seconds
-                ctx.globalAlpha = opacity;
-                // Draw debris using its specific image and stored size
-                ctx.drawImage(effect.image, effect.x, effect.y, effect.size, effect.size);
-                ctx.globalAlpha = 1.0; // Reset global alpha
-            });
+                let pointsText;
+                let effectiveColor;
+
+                if (typeof animation.points === 'number') {
+                    pointsText = animation.points >= 0 ? `+${animation.points}` : `${animation.points}`;
+                    // Usa il colore dell'animazione se presente, altrimenti determina in base ai punti
+                    effectiveColor = animation.color || (animation.points >= 0 ? '#39FF14' : '#FF3131');
+                } else {
+                    pointsText = "ERR"; // Testo di errore se animation.points non è un numero
+                    effectiveColor = animation.color || '#FF3131'; // Colore rosso per errori
+                    console.warn("Interstellar drawGame: animation.points non era un numero.", animation);
+                }
+                
+                // Assicura che effectiveColor sia una stringa esadecimale valida prima di fare il parsing
+                if (typeof effectiveColor === 'string' && /^#[0-9A-F]{6}$/i.test(effectiveColor)) {
+                    const r = parseInt(effectiveColor.slice(1, 3), 16);
+                    const g = parseInt(effectiveColor.slice(3, 5), 16);
+                    const b = parseInt(effectiveColor.slice(5, 7), 16);
+                    const safeOpacity = Math.max(0, Math.min(1, animation.opacity)); // Clamp opacity 0-1
+                    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${safeOpacity})`;
+                } else {
+                    // Fallback se effectiveColor non è valido (es. testo errore in rosso)
+                    const safeOpacity = Math.max(0, Math.min(1, animation.opacity));
+                    ctx.fillStyle = `rgba(255, 0, 0, ${safeOpacity})`; // Rosso di default per errore colore
+                    console.warn("Interstellar drawGame: effectiveColor non era valido:", effectiveColor);
+                }
+
+                ctx.fillText(pointsText, animation.x, animation.y);
+            }
+            ctx.restore(); // Ripristina lo stato del contesto
 
             // Draw items
             gameItems.forEach((item, index) => {
@@ -1523,6 +1598,12 @@ console.log('Modulo interstellar.js caricato correttamente.');
                     itemImageToDraw = protectiveShieldImage;
                 } else if (item.isLaserGun) {
                     itemImageToDraw = laserGunImage;
+                } else if (item.isLaserEffect) { // NUOVO: Disegna l'effetto laser sull'asteroide
+                    itemImageToDraw = laserEffectImage;
+                    itemSizeToDraw = INTERSTELLAR_ITEM_SIZE; // O la dimensione dell'asteroide originale
+                } else if (item.isSplatEffect) { // NUOVO: Disegna l'effetto splat
+                    itemImageToDraw = splatImage;
+                    itemSizeToDraw = INTERSTELLAR_ITEM_SIZE; // O la dimensione dell'alieno originale
                 }
 
                 if (itemImageToDraw && itemImageToDraw.complete) {
@@ -1619,7 +1700,7 @@ console.log('Modulo interstellar.js caricato correttamente.');
             updateItems();
 
             // Draw the game
-            drawGame();
+            drawGame(deltaTime);
 
             // Request next frame
             animationFrameId = requestAnimationFrame(gameLoop);
