@@ -1153,10 +1153,10 @@ function updateCartPosition() {
     targetVelocityX = targetDirection * effectiveCartSpeed;
 
     //velocita attuale + accelerazione
-    cartVelocity += (targetVelocityX - cartVelocity) * smoothingFactor * deltaTime; 
+    currentCartVelocity += (targetVelocityX - currentCartVelocity) * smoothingFactor * deltaTime; 
 
     //applica posizione nuova
-    cartX += cartVelocity * deltaTime;
+    cartX += currentCartVelocity * deltaTime;
 
     // Touch controls are now handled directly in the touchmove event
     // No need to handle them here as we're directly setting cartX in the event
