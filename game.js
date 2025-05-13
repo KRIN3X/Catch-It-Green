@@ -10,8 +10,6 @@ const TARGET_FPS = 60; // Target frames per second for delta time normalization
 const CART_COLLISION_SURFACE_HEIGHT = 30; // Altezza in pixel della superficie di collisione superiore del carrello.
 const CART_COLLISION_HORIZONTAL_PADDING = 5; // Padding orizzontale per lato per la collisione del carrello.
 
-let cartVelocity = 0;
-
 // Sound manager for improved audio handling, especially on mobile
 let soundManager = {
     initialized: false,
@@ -208,6 +206,8 @@ let doubleDoublePointsActive = false; // Flag for Double Double points effect
 let doubleDoublePointsEndTime = 0; // End time for Double Double points effect
 let doubleDoubleSpeedActive = false; // Flag for Double Double speed effect
 let doubleDoubleSpeedEndTime = 0; // End time for Double Double speed effect
+let currentCartVelocity = 0;
+
 
 // Special items
 const bonusItem = { name: 'Garden Gnome', points: 25, image: 'bonus.png', fastSpeed: true, smokeColor: 'rgba(100, 200, 255, 0.8)' }; // Light blue haze
